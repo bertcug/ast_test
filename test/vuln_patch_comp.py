@@ -109,4 +109,7 @@ def vuln_patch_comp_proc():
         ws.append(ret)
     
     wb.save("result.xlsx")
+
+if __name__ == "__main__":
+    vuln_patch_comp_proc()
     
