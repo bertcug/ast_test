@@ -34,7 +34,7 @@ def vuln_patch_compare(vuln_info, lock):
         
         lock.acquire()
         wb=load_workbook("result.xlsx")
-        ws=wb.active()
+        ws=wb.active
         line = process_line(conn, vuln_info, status, None, 0)
         ws.append(line)
         wb.save("result.xlsx")
@@ -48,7 +48,7 @@ def vuln_patch_compare(vuln_info, lock):
         
         lock.acquire()
         wb=load_workbook("result.xlsx")
-        ws=wb.active()
+        ws=wb.active
         line = process_line(conn, vuln_info, status, None, 0)
         ws.append(line)
         wb.save("result.xlsx")
