@@ -4,7 +4,7 @@ Created on 2016年1月4日
 @author: Bert
 '''
 
-import time
+import time, datetime
 from db.models import get_connection
 from db.models import vulnerability_info, softwares, cve_infos
 from algorithm.ast import serializedAST, get_function_ast_root
@@ -20,7 +20,7 @@ def vuln_patch_compare(vuln_info, lock):
     neo4jdb = Graph()
     
     cve_info = vuln_info.get_cve_info(conn)
-    print "processing %s" % cve_info.cveid
+    print "[%s] processing %s" % (datetime.datetime.now().strftime("%y-%m-%d %H:%M:%S"), cve_info.cveid)
     
     vuln_name = cve_info.cveid.replace("-", "_").upper() + "_VULN_" + vuln_info.vuln_func
     patch_name = cve_info.cveid.replace("-", "_").upper() + "_PATCHED_" + vuln_info.vuln_func
@@ -38,7 +38,7 @@ def vuln_patch_compare(vuln_info, lock):
         ws.append(line)
         wb.save("result.xlsx")
         lock.release()
-        
+    
         return
     
     patched_func = get_function_ast_root(neo4jdb, patch_name)
