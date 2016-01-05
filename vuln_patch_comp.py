@@ -70,6 +70,7 @@ def vuln_patch_compare(vuln_info, lock):
     if s4.genSerilizedAST(vuln_func) == s4.genSerilizedAST(patched_func):
         r['no_type_no_const'] = True
     
+    status = "success"
     end_time = time.time()
     cost = round(end_time - start_time, 2)
     
