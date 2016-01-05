@@ -4,6 +4,14 @@ Created on 2016年1月4日
 
 @author: Bert
 '''
+import MySQLdb
+
+def get_connection():
+    try:
+        conn = MySQLdb.connect(host="211.69.198.89", port=3306, user="bert", passwd="qazwsxedc", db="code_similarity")
+        return conn
+    except:
+        return None
 
 class cve_infos():
     info_id = 0
@@ -27,6 +35,7 @@ class cve_infos():
         ret = cur.fetchone()
         cur.close()
         return softwares(ret)
+    
 def get_cve_info(conn, info_id):
     cur = conn.cursor()
     cur.execute("select * from cve_infos where indo_id=%d" % info_id)
@@ -63,7 +72,7 @@ def get_software(conn, soft_id):
     except:
         return None
     
-class vulnerability_infos():
+class vulnerability_info():
     vuln_id = 0
     vuln_func = ""
     vuln_file = ""
@@ -94,10 +103,10 @@ class vulnerability_infos():
 
 def get_vuln_info(conn, info_id):
     cur = conn.cursor()
-    cur.execute("select * from vulnerability_infos where vuln_id=%d" % info_id)
+    cur.execute("select * from vulnerability_info where vuln_id=%d" % info_id)
     try:
         ret = cur.fetchone()
         cur.close()
-        return vulnerability_infos(ret)
+        return vulnerability_info(ret)
     except:
         return None
