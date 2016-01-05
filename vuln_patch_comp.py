@@ -142,10 +142,12 @@ def vuln_patch_comp_proc():
     pool = Pool(processes = 10)
     lock = multiprocessing.Manager().Lock()
     for info in infos:
-        pool.apply_async(vuln_patch_compare, (vulnerability_info(info),lock))
+        pool.apply(vuln_patch_compare, (vulnerability_info(info),lock))
     
     pool.close()
     pool.join()
+    
+    print "all works done!"
     
 if __name__ == "__main__":
     vuln_patch_comp_proc()
