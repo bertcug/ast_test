@@ -20,7 +20,7 @@ def vuln_patch_compare(vuln_info, lock):
     neo4jdb = Graph()
     
     cve_info = vuln_info.get_cve_info(conn)
-    print "processing %d" % cve_info.cveid
+    print "processing %s" % cve_info.cveid
     
     vuln_name = cve_info.cveid.replace("-", "_").upper() + "_VULN_" + vuln_info.vuln_func
     patch_name = cve_info.cveid.replace("-", "_").upper() + "_PATCHED_" + vuln_info.vuln_func
