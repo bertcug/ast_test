@@ -5,14 +5,9 @@ Created on 2015年11月9日
 @author: Bert
 '''
 from igraph import Graph
-import time
-import py2neo
-from db.models import vulnerability_info, cve_infos, get_connection
-from algorithm.ast import get_function_node
-from openpyxl import load_workbook
 
 def get_cfg_nodes(neo4j_db, function_node):
-    query = "match (n {functionId:%d, isCFGNode:'True'} return n"
+    query = "match (n {functionId:%d, isCFGNode:'True'}) return n" % function_node._id
     records = neo4j_db.cypher.execute(query)
    
     nodes = []
@@ -23,7 +18,7 @@ def get_cfg_nodes(neo4j_db, function_node):
 
 def get_cfg_edges(neo4j_db, function_node):
     query = "match (n {functionId:%d, isCFGNode:'True'})-[e:`FLOWS_TO`]->(m) return e"\
-             % function_node.properties['functionId']
+             % function_node._id
     records = neo4j_db.cypher.execute(query)
     
     edges = []
@@ -35,7 +30,7 @@ def get_cfg_edges(neo4j_db, function_node):
 
 def get_ddg_edges(neo4j_db, function_node):
     query = "match(n {functionId:%d, isCFGNode:'True'})-[e:`REACHES`]->(m) return e"\
-             % function_node.properties['functionId']
+             % function_node._id
     records = neo4j_db.cypher.execute(query)
     
     edges = []
@@ -46,7 +41,7 @@ def get_ddg_edges(neo4j_db, function_node):
 
 def get_cdg_edges(neo4j_db, function_node):
     query = "match(n {functionId:%d, isCFGNode:'True'})-[e:`CONTROLS`]->(m) return e"\
-             % function_node.properties['functionId']
+             % function_node._id
     records = neo4j_db.cypher.execute(query)
     
     edges = []
@@ -114,48 +109,5 @@ def func_cfg_similarity(func1, db1, func2, db2):
         
         return True, round(max(rs), 4)
 
-def func_cfg_similarity_process(vuln_info, lock):
-    conn = get_connection()
-    neo4jdb = py2neo.Graph()
-     
-    start_time = time.time()
-    cve_info = vuln_info.get_cve_info()
-    conn.close()
-    
-    vuln_name = cve_info.cveid.replace(u"-", u"_").upper() + u"_VULN_" + vuln_info.vuln_func
-    patch_name = cve_info.cveid.replace(u"-", u"_").upper() + u"_PATCHED_" + vuln_info.vuln_func
-    
-    vuln_func = get_function_node(vuln_name, neo4jdb)
-    if vuln_func is None:
-        lock.acquire()
-        
-        wb = load_workbook("cfg_result.xlsx")
-        ws = wb.active
-        line = (cve_info.cveid, vuln_info.vuln_func, vuln_info.vuln_file[41:], 
-                "vuln_func_not_found", 0.00, 0)
-        ws.append(line)
-        wb.save("cfg_result.xlsx")
-        
-        lock.release()
-        return
-         
-    patch_func = get_function_node(patch_name, neo4jdb)
-    if patch_name is None:
-        lock.acquire()
-        
-        wb = load_workbook("cfg_result.xlsx")
-        ws = wb.active
-        line = (cve_info.cveid, vuln_info.vuln_func, vuln_info.vuln_file[41:], 
-                "patch_func_not_found", 0.00, 0)
-        ws.append(line)
-        wb.save("cfg_result.xlsx")
-        
-        lock.release()
-        return
-    
-    match, simi = func_cfg_similarity(vuln_func, neo4jdb, patch_func, neo4jdb)
-   
-    u"success"
-    end_time = time.time()
-    cost = round(end_time - start_time, 2)  
+ 
     

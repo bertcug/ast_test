@@ -122,14 +122,6 @@ def vuln_patch_comp_proc():
         print u"数据库连接失败"
         return
     
-    neo4jdb = JoernSteps()
-    try:
-        neo4jdb.setGraphDbURL('http://localhost:7474/db/data/')
-        neo4jdb.connectToDatabase()
-    except:
-        print u"图形数据库连接失败"
-        return
-    
     cur = db_conn.cursor()
     cur.execute("select * from vulnerability_info")
     rets = cur.fetchall()
