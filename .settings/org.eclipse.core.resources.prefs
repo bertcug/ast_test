@@ -3,4 +3,5 @@ encoding//algorithm/ast.py=utf-8
 encoding//algorithm/graph.py=utf-8
 encoding//db/models.py=utf-8
 encoding/<project>=UTF-8
+encoding/cfg_comp.py=utf-8
 encoding/vuln_patch_comp.py=utf-8
