@@ -14,6 +14,7 @@ from openpyxl import Workbook
 from openpyxl.reader.excel import load_workbook
 import multiprocessing
 from py2neo import Graph
+from __builtin__ import True
 
 def vuln_patch_compare(vuln_info, lock):
     conn = get_connection()
@@ -62,13 +63,21 @@ def vuln_patch_compare(vuln_info, lock):
     
     r = {}
     if s1.genSerilizedAST(vuln_func) == s1.genSerilizedAST(patched_func):
-        r['distinct_type_and_const'] = True
+        r["distinct_type_and_const"] = True
+    else:
+        r["distinct_type_and_const"] = False
     if s2.genSerilizedAST(vuln_func) == s2.genSerilizedAST(patched_func):
-        r['distinct_const_no_type'] = True
+        r["distinct_const_no_type"] = True
+    else:
+        r["distinct_const_no_type"] = False
     if s3.genSerilizedAST(vuln_func) == s3.genSerilizedAST(patched_func):
-        r['distinct_type_no_const'] = True
+        r["distinct_type_no_const"] = True
+    else:
+        r["distinct_type_no_const"] = False
     if s4.genSerilizedAST(vuln_func) == s4.genSerilizedAST(patched_func):
-        r['no_type_no_const'] = True
+        r["no_type_no_const"] = True
+    else:
+        r["no_type_no_const"] = False
     
     status = "success"
     end_time = time.time()
