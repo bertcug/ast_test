@@ -46,7 +46,7 @@ def func_cfg_similarity_process(vuln_info, lock):
         return
          
     patch_func = get_function_node(neo4jdb, patch_name)
-    if patch_name is None:
+    if patch_func is None:
         lock.acquire()
         
         wb = load_workbook("cfg_result.xlsx")
@@ -90,7 +90,8 @@ if __name__ == "__main__":
     cur.close()
     infos = []
     for ret in rets:
-        soft = vulnerability_info(ret).get_cve_info(db_conn).get_soft(db_conn)
+        cve_info = vulnerability_info(ret).get_cve_info(db_conn)
+        soft = cve_info.get_soft(db_conn)
         if soft.software_name == "ffmpeg":
             infos.append(ret)
  

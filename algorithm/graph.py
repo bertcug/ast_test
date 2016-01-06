@@ -1,9 +1,9 @@
 # coding=utf-8
 '''
 Created on 2015年11月9日
-
 @author: Bert
 '''
+
 from igraph import Graph
 
 def get_cfg_nodes(neo4j_db, function_node):
@@ -55,22 +55,50 @@ def get_func_file(neo4j_db, function_node):
     records = neo4j_db.cypher.execute(query)
     return records.one
 
+def get_node_properties(dict):
+    properties = {}
+    if dict['code'] is None:
+        properties['code'] = "None"
+    else:
+        properties['code'] = dict['code']
+    
+    if dict['type'] is None:
+        properties['type'] = "None"
+    else:
+        properties['type'] = dict['type']
+    return properties
+
+def get_edge_properties(dict):
+    if dict['flowLabel'] is None:
+        return {'flowLabel':"None"}
+    else:
+        return {'flowLabel':dict['flowLabel']}
+    
 def translate_cfg(neo4j_db, function_node):
-    cfg_nodes = get_cfg_nodes(neo4j_db, function_node)
     cfg_edges = get_cfg_edges(neo4j_db, function_node)
     
     #create igraph cfg
     g = Graph(directed = True)
-    #add node and node properties
-    for cfgNode in cfg_nodes :
-        node_prop = {'code':cfgNode.properties['code'],'type':cfgNode.properties['type']}
-        g.add_vertex(str(cfgNode._id),**node_prop)
+    
     #add edge and edge properties
-    for cfgEdge in cfg_edges :
-        startNode = str(cfgEdge.start_node._id)
-        endNode = str(cfgEdge.end_node._id)
-        edge_prop = {'flowLabel':cfgEdge.properties['flowLabel']}
-        g.add_edge(startNode,endNode,**edge_prop)
+    for edge in cfg_edges :
+        start_node = edge.start_node
+        end_node = edge.end_node
+        
+        if start_node is None or end_node is None:
+            print "edge has no start or end node"
+        
+        try:
+            g.vs.find(name=str(start_node._id))
+        except:
+            g.add_vertex(name=str(start_node._id), **get_node_properties(start_node.properties))
+        try:
+            g.vs.find(name=str(end_node._id))
+        except:
+            g.add_vertex(name=str(end_node._id), **get_node_properties(end_node.properties))
+        
+        g.add_edge(str(start_node._id), str(end_node._id),**get_edge_properties(edge.properties))
+    
     return g
 
 def node_compat_fn(g1,g2,n1,n2):
