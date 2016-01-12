@@ -5,10 +5,11 @@ Created on Jan 6, 2016
 @author: bert
 '''
 
-from py2neo import Graph as datebase
-from algorithm.graph import get_cfg_edges
-from algorithm.ast import get_function_node
-from igraph import Graph
+#from py2neo import Graph as datebase
+#from algorithm.graph import get_cfg_edges
+#from algorithm.ast import get_function_node
+#from igraph import Graph
+import re
 '''
 def get_properties(dict):
     properties = {}
@@ -89,9 +90,20 @@ if __name__ == "__main__":
         exit(0)
     
     cur = db_conn.cursor()
-    cur.execute("select * from vulnerability_info")
+    cur.execute("select * from cve_infos")
     rets = cur.fetchall()
     cur.close()
+    
+    for ret in rets:
+        cve_info = cve_infos(ret)
+        contents = open(cve_info.diff_file, "r").read(1024)
+        reg = r"^@@"
+        if re.match(reg, contents):
+            print cve_info.cveid.upper()
+    
+    print "all works done"
+    
+    '''
     infos = []
     for ret in rets:
         cve_info = vulnerability_info(ret).get_cve_info(db_conn)
@@ -101,4 +113,4 @@ if __name__ == "__main__":
     
     for info in infos:
         func_cfg_similarity_process(vulnerability_info(info))   
-    
+    '''
