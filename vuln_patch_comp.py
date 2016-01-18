@@ -14,7 +14,7 @@ from openpyxl import Workbook
 from openpyxl.reader.excel import load_workbook
 import multiprocessing
 from py2neo import Graph
-from __builtin__ import True
+import re
 
 def vuln_patch_compare(vuln_info, lock):
     conn = get_connection()
@@ -131,8 +131,7 @@ def vuln_patch_comp_proc():
         soft = vulnerability_info(ret).get_cve_info(db_conn).get_soft(db_conn)
         if soft.software_name == "ffmpeg":
             infos.append(ret)
-        
-    
+         
     wb = Workbook()
     ws = wb.active
     ws.title = u"测试结果"
@@ -150,7 +149,46 @@ def vuln_patch_comp_proc():
     pool.join()
     
     print "all works done!"
+
+def patch_segement_comp(db1, vuln_func, db2, patch_segement, suffix_obj):
     
+    start_time =  time.time()
+    
+    pattern1 = serializedAST(db2, True, True).genSerilizedAST(patch_segement)
+    pattern2 = serializedAST(db2, False, True).genSerilizedAST(patch_segement)  
+    pattern3 = serializedAST(db2, True, False).genSerilizedAST(patch_segement)
+    pattern4 = serializedAST(db2, False, False).genSerilizedAST(patch_segement)
+    
+    #delete FunctionDef and CompoundStatement node
+    prefix_str = r"^FunctionDef\([0-9]+\);CompoundStatement\([0-9]+\);"
+    pattern1 = re.sub(prefix_str, "", pattern1)
+    pattern2 = re.sub(prefix_str, "", pattern2)
+    pattern3 = re.sub(prefix_str, "", pattern3)
+    pattern4 = re.sub(prefix_str, "", pattern4)
+    
+    s1 = serializedAST(db1, True, True)
+    s2 = serializedAST(db1, False, True)
+    s3 = serializedAST(db1, True, False)
+    s4 = serializedAST(db1, False, False)
+    
+    report = {}
+    if suffix_obj.search(s1.genSerilizedAST(vuln_func), pattern1):
+            report['distinct_type_and_const'] = True
+        
+    if suffix_obj.search(s2.genSerilizedAST(vuln_func), pattern2):
+        report['distinct_const_no_type'] = True
+        
+    if suffix_obj.search(s3.genSerilizedAST(vuln_func), pattern3):
+        report['distinct_type_no_const'] = True
+        
+    if suffix_obj.search(s4.genSerilizedAST(vuln_func), pattern4):
+        report['no_type_no_const'] = True
+    
+    end_time = time.time()
+    cost = round(end_time - start_time, 2)
+    
+    return report, cost
+
 if __name__ == "__main__":
     vuln_patch_comp_proc()
     
