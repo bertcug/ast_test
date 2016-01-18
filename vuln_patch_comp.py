@@ -137,9 +137,9 @@ def vuln_patch_comp_proc():
     cur.close()
     infos = []
     for ret in rets:
-        soft = vulnerability_info(ret).get_cve_info(db_conn).get_soft(db_conn)
-        if soft.software_name == "ffmpeg":
-            infos.append(ret)
+        #soft = vulnerability_info(ret).get_cve_info(db_conn).get_soft(db_conn)
+        #if soft.software_name == "ffmpeg":
+        infos.append(ret)
          
     wb = Workbook()
     ws = wb.active
