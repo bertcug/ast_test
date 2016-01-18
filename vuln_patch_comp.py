@@ -74,7 +74,7 @@ def vuln_patch_compare(vuln_info, lock):
     s3 = serializedAST(neo4jdb, True, False)
     s4 = serializedAST(neo4jdb, False, False)
     
-    global suffix_tree_obj
+    suffix_tree_obj = suffixtree()
     report = {}
     if suffix_tree_obj.search(s1.genSerilizedAST(vuln_func), pattern1):
             report['distinct_type_and_const'] = True
@@ -87,6 +87,8 @@ def vuln_patch_compare(vuln_info, lock):
         
     if suffix_tree_obj.search(s4.genSerilizedAST(vuln_func), pattern4):
         report['no_type_no_const'] = True
+    
+    suffix_tree_obj.close()
     
     status = "success"
     end_time = time.time()
@@ -204,6 +206,5 @@ def segement_compare_proc():
     pass
     
 if __name__ == "__main__":
-    suffix_tree_obj = suffixtree()
     vuln_patch_comp_proc()
     
