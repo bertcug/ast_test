@@ -15,8 +15,9 @@ from openpyxl.reader.excel import load_workbook
 import multiprocessing
 from py2neo import Graph
 import re
+from algorithm.suffixtree import suffixtree
 
-def vuln_patch_compare(vuln_info, lock):
+def vuln_patch_compare(vuln_info, suffix_tree_obj, lock):
     conn = get_connection()
     neo4jdb = Graph()
     
@@ -56,28 +57,35 @@ def vuln_patch_compare(vuln_info, lock):
         
         return
     
+    pattern1 = serializedAST(neo4jdb, True, True).genSerilizedAST(vuln_func)
+    pattern2 = serializedAST(neo4jdb, False, True).genSerilizedAST(vuln_func)  
+    pattern3 = serializedAST(neo4jdb, True, False).genSerilizedAST(vuln_func)
+    pattern4 = serializedAST(neo4jdb, False, False).genSerilizedAST(vuln_func)
+    
+    #delete FunctionDef and CompoundStatement node
+    prefix_str = r"^FunctionDef\([0-9]+\);CompoundStatement\([0-9]+\);"
+    pattern1 = re.sub(prefix_str, "", pattern1)
+    pattern2 = re.sub(prefix_str, "", pattern2)
+    pattern3 = re.sub(prefix_str, "", pattern3)
+    pattern4 = re.sub(prefix_str, "", pattern4)
+    
     s1 = serializedAST(neo4jdb, True, True)
     s2 = serializedAST(neo4jdb, False, True)
     s3 = serializedAST(neo4jdb, True, False)
     s4 = serializedAST(neo4jdb, False, False)
     
-    r = {}
-    if s1.genSerilizedAST(vuln_func) == s1.genSerilizedAST(patched_func):
-        r["distinct_type_and_const"] = True
-    else:
-        r["distinct_type_and_const"] = False
-    if s2.genSerilizedAST(vuln_func) == s2.genSerilizedAST(patched_func):
-        r["distinct_const_no_type"] = True
-    else:
-        r["distinct_const_no_type"] = False
-    if s3.genSerilizedAST(vuln_func) == s3.genSerilizedAST(patched_func):
-        r["distinct_type_no_const"] = True
-    else:
-        r["distinct_type_no_const"] = False
-    if s4.genSerilizedAST(vuln_func) == s4.genSerilizedAST(patched_func):
-        r["no_type_no_const"] = True
-    else:
-        r["no_type_no_const"] = False
+    report = {}
+    if suffix_tree_obj.search(s1.genSerilizedAST(vuln_func), pattern1):
+            report['distinct_type_and_const'] = True
+        
+    if suffix_tree_obj.search(s2.genSerilizedAST(vuln_func), pattern2):
+        report['distinct_const_no_type'] = True
+        
+    if suffix_tree_obj.search(s3.genSerilizedAST(vuln_func), pattern3):
+        report['distinct_type_no_const'] = True
+        
+    if suffix_tree_obj.search(s4.genSerilizedAST(vuln_func), pattern4):
+        report['no_type_no_const'] = True
     
     status = "success"
     end_time = time.time()
@@ -86,7 +94,7 @@ def vuln_patch_compare(vuln_info, lock):
     lock.acquire()
     wb=load_workbook("result.xlsx")
     ws=wb.active
-    line = process_line(conn, vuln_info, status, r, cost)
+    line = process_line(conn, vuln_info, status, report, cost)
     ws.append(line)
     wb.save("result.xlsx")
     lock.release()
@@ -140,10 +148,12 @@ def vuln_patch_comp_proc():
     ws.append(header)
     wb.save("result.xlsx")
     
+    suffix_tree_obj = suffixtree()
+    
     pool = Pool(processes = 10)
     lock = multiprocessing.Manager().Lock()
     for info in infos:
-        pool.apply(vuln_patch_compare, (vulnerability_info(info),lock))
+        pool.apply(vuln_patch_compare, (vulnerability_info(info), suffix_tree_obj, lock))
     
     pool.close()
     pool.join()
@@ -189,6 +199,9 @@ def patch_segement_comp(db1, vuln_func, db2, patch_segement, suffix_obj):
     
     return report, cost
 
+def segement_compare_proc():
+    pass
+    
 if __name__ == "__main__":
     vuln_patch_comp_proc()
     
