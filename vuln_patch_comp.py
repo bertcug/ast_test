@@ -17,7 +17,7 @@ from py2neo import Graph
 import re
 from algorithm.suffixtree import suffixtree
 
-def vuln_patch_compare(vuln_info, suffix_tree_obj, lock):
+def vuln_patch_compare(vuln_info, lock):
     conn = get_connection()
     neo4jdb = Graph()
     
@@ -74,6 +74,7 @@ def vuln_patch_compare(vuln_info, suffix_tree_obj, lock):
     s3 = serializedAST(neo4jdb, True, False)
     s4 = serializedAST(neo4jdb, False, False)
     
+    global suffix_tree_obj
     report = {}
     if suffix_tree_obj.search(s1.genSerilizedAST(vuln_func), pattern1):
             report['distinct_type_and_const'] = True
@@ -131,7 +132,7 @@ def vuln_patch_comp_proc():
         return
     
     cur = db_conn.cursor()
-    cur.execute("select * from vulnerability_info")
+    cur.execute("select * from vulnerability_info where vuln_func='dissect_pw_eth_heuristic'")
     rets = cur.fetchall()
     cur.close()
     infos = []
@@ -148,12 +149,12 @@ def vuln_patch_comp_proc():
     ws.append(header)
     wb.save("result.xlsx")
     
-    suffix_tree_obj = suffixtree()
+    
     
     pool = Pool(processes = 10)
     lock = multiprocessing.Manager().Lock()
     for info in infos:
-        pool.apply(vuln_patch_compare, (vulnerability_info(info), suffix_tree_obj, lock))
+        pool.apply(vuln_patch_compare, (vulnerability_info(info), lock))
     
     pool.close()
     pool.join()
@@ -203,5 +204,6 @@ def segement_compare_proc():
     pass
     
 if __name__ == "__main__":
+    suffix_tree_obj = suffixtree()
     vuln_patch_comp_proc()
     
