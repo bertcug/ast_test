@@ -111,7 +111,7 @@ def vuln_patch_comp_proc():
     suffix_tree_obj = suffixtree()
     
     cur = db_conn.cursor()
-    cur.execute("select * from vulnerability_info where is_in_db=1")
+    cur.execute("select * from vulnerability_info")
     rets = cur.fetchall()
     
     infos = []
