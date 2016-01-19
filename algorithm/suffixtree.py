@@ -1,10 +1,11 @@
 # -*- coding: UTF-8 -*-
 import jpype
+import os
 
 class suffixtree:
     
     def __init__(self):
-        self.classPath="./suffixtree.jar"
+        self.classPath=os.path.join(os.path.dirname(__file__), "suffixtree.jar")
         jvmPath = jpype.getDefaultJVMPath()
 
         if jvmPath==None:

@@ -82,7 +82,7 @@ class vulnerability_info():
     patched_func_source = ""
     cve_info_id = 0
     user_id = 0
-    is_in_db = False
+    is_in_db = 0
     vuln_type=""
     
     def __init__(self, log):

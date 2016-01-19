@@ -127,13 +127,11 @@ def vuln_patch_comp_proc():
               "distinct_type_no_const", "no_type_no_const", "cost"]
     ws.append(header)
     
-   
-    
     for info in infos:
         vuln_patch_compare(db_conn, neo4jdb, vulnerability_info(info), ws, suffix_tree_obj)
     
     suffix_tree_obj.close()
-    wb.save("result.xslx")
+    wb.save("result.xlsx")
     
     print "all works done!"
 
