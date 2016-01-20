@@ -57,16 +57,16 @@ def vuln_patch_compare(conn, neo4jdb, vuln_info, worksheet, suffix_tree_obj):
     s4 = serializedAST(neo4jdb, False, False)
     
     report = {}
-    if suffix_tree_obj.search(s1.genSerilizedAST(vuln_func), pattern1):
+    if suffix_tree_obj.search(s1.genSerilizedAST(vuln_func)[0], pattern1):
             report['distinct_type_and_const'] = True
         
-    if suffix_tree_obj.search(s2.genSerilizedAST(vuln_func), pattern2):
+    if suffix_tree_obj.search(s2.genSerilizedAST(vuln_func)[0], pattern2):
         report['distinct_const_no_type'] = True
         
-    if suffix_tree_obj.search(s3.genSerilizedAST(vuln_func), pattern3):
+    if suffix_tree_obj.search(s3.genSerilizedAST(vuln_func)[0], pattern3):
         report['distinct_type_no_const'] = True
         
-    if suffix_tree_obj.search(s4.genSerilizedAST(vuln_func), pattern4):
+    if suffix_tree_obj.search(s4.genSerilizedAST(vuln_func)[0], pattern4):
         report['no_type_no_const'] = True
        
     status = "success"
