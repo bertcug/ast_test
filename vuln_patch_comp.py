@@ -39,10 +39,10 @@ def vuln_patch_compare(conn, neo4jdb, vuln_info, worksheet, suffix_tree_obj):
         worksheet.append(line)
         return
     
-    pattern1 = serializedAST(neo4jdb, True, True).genSerilizedAST(vuln_func)
-    pattern2 = serializedAST(neo4jdb, False, True).genSerilizedAST(vuln_func)  
-    pattern3 = serializedAST(neo4jdb, True, False).genSerilizedAST(vuln_func)
-    pattern4 = serializedAST(neo4jdb, False, False).genSerilizedAST(vuln_func)
+    pattern1 = serializedAST(neo4jdb, True, True).genSerilizedAST(vuln_func)[0]
+    pattern2 = serializedAST(neo4jdb, False, True).genSerilizedAST(vuln_func)[0] 
+    pattern3 = serializedAST(neo4jdb, True, False).genSerilizedAST(vuln_func)[0]
+    pattern4 = serializedAST(neo4jdb, False, False).genSerilizedAST(vuln_func)[0]
     
     #delete FunctionDef and CompoundStatement node
     prefix_str = r"^FunctionDef\([0-9]+\);CompoundStatement\([0-9]+\);"
