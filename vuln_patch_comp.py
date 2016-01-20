@@ -52,22 +52,22 @@ def vuln_patch_compare(conn, neo4jdb, vuln_info, worksheet, suffix_tree_obj):
     pattern3 = re.sub(prefix_str, "", pattern3)
     pattern4 = re.sub(prefix_str, "", pattern4)
     
-    s1 = serializedAST(neo4jdb, True, True)
-    s2 = serializedAST(neo4jdb, False, True)
-    s3 = serializedAST(neo4jdb, True, False)
-    s4 = serializedAST(neo4jdb, False, False)
+    s1 = serializedAST(neo4jdb, True, True).genSerilizedAST(vuln_func)[0][:-1]
+    s2 = serializedAST(neo4jdb, False, True).genSerilizedAST(vuln_func)[0][:-1]
+    s3 = serializedAST(neo4jdb, True, False).genSerilizedAST(vuln_func)[0][:-1]
+    s4 = serializedAST(neo4jdb, False, False).genSerilizedAST(vuln_func)[0][:-1]
     
     report = {}
-    if suffix_tree_obj.search(s1.genSerilizedAST(vuln_func)[0][:-1], pattern1):
+    if suffix_tree_obj.search(s1, pattern1):
             report['distinct_type_and_const'] = True
         
-    if suffix_tree_obj.search(s2.genSerilizedAST(vuln_func)[0][:-1], pattern2):
+    if suffix_tree_obj.search(s2, pattern2):
         report['distinct_const_no_type'] = True
         
-    if suffix_tree_obj.search(s3.genSerilizedAST(vuln_func)[0][:-1], pattern3):
+    if suffix_tree_obj.search(s3, pattern3):
         report['distinct_type_no_const'] = True
         
-    if suffix_tree_obj.search(s4.genSerilizedAST(vuln_func)[0][:-1], pattern4):
+    if suffix_tree_obj.search(s4, pattern4):
         report['no_type_no_const'] = True
        
     status = "success"
@@ -108,7 +108,7 @@ def vuln_patch_comp_proc():
         print u"数据库连接失败"
         return
     
-    neo4jdb = Graph()
+    neo4jdb = Graph("http://211.69.198.89:7474/db/data/")
     suffix_tree_obj = suffixtree()
     
     cur = db_conn.cursor()
