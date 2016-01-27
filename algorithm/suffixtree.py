@@ -7,7 +7,7 @@ class suffixtree:
     def __init__(self):
         self.classPath=os.path.join(os.path.dirname(__file__), "suffixtree.jar")
         jvmPath = jpype.getDefaultJVMPath()
-
+        
         if jvmPath==None:
             print "Cannot get the Default JVMPath"
             return -1      
