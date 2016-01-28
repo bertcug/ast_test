@@ -8,8 +8,8 @@ import MySQLdb
 
 def get_connection():
     try:
-        conn = MySQLdb.connect(host="211.69.198.89", port=3306,
-                                user="bert", passwd="qazwsxedc",
+        conn = MySQLdb.connect(host="127.0.0.1", port=3306,
+                                user="root", passwd="8089630",
                                  db="code_similarity")
         return conn
     except:

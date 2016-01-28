@@ -131,7 +131,10 @@ def vuln_patch_comp_proc():
     ws.append(header)
     
     for info in infos:
-        vuln_patch_compare(db_conn, neo4jdb, vulnerability_info(info), ws, suffix_tree_obj)
+        try:
+            vuln_patch_compare(db_conn, neo4jdb, vulnerability_info(info), ws, suffix_tree_obj)
+        except Exception:
+            print "error occured"
     
     suffix_tree_obj.close()
     wb.save("result.xlsx")

@@ -86,8 +86,11 @@ if __name__ == "__main__":
     ws.append(header)
     
    
-    for info in infos:
-        func_pdg_similarity_process(vulnerability_info(info), db_conn, neo4jdb, ws)
-    
+    for i in range(20):
+        try:
+            func_pdg_similarity_process(vulnerability_info(infos[i]), db_conn, neo4jdb, ws)
+        except Exception:
+            print "error occured"
+            
     wb.save("pdg_result.xlsx")
     print "all works done!"

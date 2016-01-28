@@ -84,6 +84,11 @@ if __name__ == "__main__":
     
 
     for info in infos:
-        func_cfg_similarity_process(vulnerability_info(info), db_conn, neo4jdb, ws)
+        try:
+            func_cfg_similarity_process(vulnerability_info(info), db_conn, neo4jdb, ws)
+        except Exception:
+            print "error occured"
         
+    wb.save("cfg_redult.xlsx")
     print "all works done!"
+    
