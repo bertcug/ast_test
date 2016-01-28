@@ -4,7 +4,9 @@ Created on 2016年1月4日
 @author: Bert
 '''
 
-import time, datetime
+import time, datetime, sys
+sys.path.append("..")
+
 from db.models import get_connection
 from db.models import vulnerability_info, softwares, cve_infos
 from algorithm.ast import serializedAST, get_function_ast_root
@@ -108,7 +110,7 @@ def vuln_patch_comp_proc():
         print u"数据库连接失败"
         return
     
-    neo4jdb = Graph("http://211.69.198.89:7474/db/data/")
+    neo4jdb = Graph()
     suffix_tree_obj = suffixtree()
     
     cur = db_conn.cursor()
@@ -136,14 +138,15 @@ def vuln_patch_comp_proc():
     
     print "all works done!"
 
-def patch_segement_comp(db1, vuln_func, db2, patch_segement, suffix_obj):
+def patch_segement_comp(db1, vuln_func, db2, patch_segement, suffix_tree_obj):
     
     start_time =  time.time()
     
-    pattern1 = serializedAST(db2, True, True).genSerilizedAST(patch_segement)
-    pattern2 = serializedAST(db2, False, True).genSerilizedAST(patch_segement)  
-    pattern3 = serializedAST(db2, True, False).genSerilizedAST(patch_segement)
-    pattern4 = serializedAST(db2, False, False).genSerilizedAST(patch_segement)
+     #序列化AST返回值是一个数组，0元素是序列化的AST字符串，1元素是节点个数，AST字符串以;结尾，需要去掉结尾的;
+    pattern1 = serializedAST(db2, True, True).genSerilizedAST(patch_segement)[0][:-1]
+    pattern2 = serializedAST(db2, False, True).genSerilizedAST(patch_segement)[0][:-1] 
+    pattern3 = serializedAST(db2, True, False).genSerilizedAST(patch_segement)[0][:-1]
+    pattern4 = serializedAST(db2, False, False).genSerilizedAST(patch_segement)[0][:-1]
     
     #delete FunctionDef and CompoundStatement node
     prefix_str = r"^FunctionDef\([0-9]+\);CompoundStatement\([0-9]+\);"
@@ -152,22 +155,22 @@ def patch_segement_comp(db1, vuln_func, db2, patch_segement, suffix_obj):
     pattern3 = re.sub(prefix_str, "", pattern3)
     pattern4 = re.sub(prefix_str, "", pattern4)
     
-    s1 = serializedAST(db1, True, True)
-    s2 = serializedAST(db1, False, True)
-    s3 = serializedAST(db1, True, False)
-    s4 = serializedAST(db1, False, False)
+    s1 = serializedAST(db1, True, True).genSerilizedAST(vuln_func)[0][:-1]
+    s2 = serializedAST(db1, False, True).genSerilizedAST(vuln_func)[0][:-1]
+    s3 = serializedAST(db1, True, False).genSerilizedAST(vuln_func)[0][:-1]
+    s4 = serializedAST(db1, False, False).genSerilizedAST(vuln_func)[0][:-1]
     
     report = {}
-    if suffix_obj.search(s1.genSerilizedAST(vuln_func), pattern1):
+    if suffix_tree_obj.search(s1, pattern1):
             report['distinct_type_and_const'] = True
         
-    if suffix_obj.search(s2.genSerilizedAST(vuln_func), pattern2):
+    if suffix_tree_obj.search(s2, pattern2):
         report['distinct_const_no_type'] = True
         
-    if suffix_obj.search(s3.genSerilizedAST(vuln_func), pattern3):
+    if suffix_tree_obj.search(s3, pattern3):
         report['distinct_type_no_const'] = True
         
-    if suffix_obj.search(s4.genSerilizedAST(vuln_func), pattern4):
+    if suffix_tree_obj.search(s4, pattern4):
         report['no_type_no_const'] = True
     
     end_time = time.time()
