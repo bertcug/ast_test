@@ -38,8 +38,8 @@ class suffixtree:
         jpype.shutdownJVM()
 
 #路径根据实际情况修改
-x=suffixtree()
+#x=suffixtree()
 
-print x.search("B(1);A(2);A(1);N(3);N(1);A(1)","A(3);N(0);N(1)")
-print x.search("B(1);A(2);A(1);N(3);N(1);Ab(1)","N(1);A(2);A(1)")
-x.close()
+#print x.search("B(1);A(2);A(1);N(3);N(1);A(1)","A(3);N(0);N(1)")
+#print x.search("B(1);A(2);A(1);N(3);N(1);Ab(1)","N(1);A(2);A(1)")
+#x.close()
