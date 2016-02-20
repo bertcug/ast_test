@@ -26,9 +26,14 @@ class suffixtree:
         dc = self.Decompose(srcSeri)    
         if dc.exist(vulnSeri): 
             result=self.Decompose.cut_all(vulnSeri)
+	    print result
             #print "The sub tokens with complete Syntax is:" ,result
             if result:
-                return True
+                ret = self.isComplete(result)
+                if ret:
+                    return True
+                else:
+                    return False
             else:
                 return False
         else:
@@ -36,7 +41,17 @@ class suffixtree:
         
     def close(self):
         jpype.shutdownJVM()
-
+    
+    #判断字串是否完整 完整返回True否则返回False
+    #tokenSeri待判断字串
+    def isComplete(self,tokenSeri):
+        r = self.Decompose.isComplete(tokenSeri)
+        if r == 1:
+            #print "tokenSeri is a complete syntax unit"
+            return True
+        else:
+            #print "tokenSeri is not a complete syntax unit"
+            return False
 #路径根据实际情况修改
 #x=suffixtree()
 
