@@ -58,15 +58,16 @@ if __name__ == "__main__":
     header = [u'漏洞段', u"无漏洞段", u"是否匹配", u"相似度", u"耗时"]
     worksheet.append(header)
     
-    '''
     for row in ws.rows:
         if row[0].value == u"漏洞函数名":
             continue
         
         try:
             segement_cfg_similarity_process(row[0].value, row[1].value, neo4jdb, worksheet)
+            workbook.save("cfg_segement_result.xlsx")
         except Exception:
             print "process " + row[0].value + "error"
-    '''
-    segement_cfg_similarity_process("CVE_2014_8544_VULN_COMPLETE_0", "CVE_2014_8544_PATCHED_COMPLETE_0", neo4jdb, worksheet)
-    workbook.save("cfg_segement_result.xlsx")
+    
+    print "all works done!"
+    #segement_cfg_similarity_process("CVE_2014_8544_VULN_COMPLETE_0", "CVE_2014_8544_PATCHED_COMPLETE_0", neo4jdb, worksheet)
+    
