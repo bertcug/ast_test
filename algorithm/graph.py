@@ -172,6 +172,10 @@ def cal_similarity(srcCFG,tarCFG,vertexMap):
 def func_cfg_similarity(func1, db1, func2, db2):
     srcCFG = translate_cfg(db1, func1)
     targetCFG = translate_cfg(db2, func2)
+    #如果节点太多，就不进行计算
+    if len(targetCFG.vs) > 500:
+        return False, u"节点太多，无法进行子图查询"
+    
     ret = srcCFG.get_subisomorphisms_vf2(other = targetCFG,node_compat_fn = cfg_node_compat_fn,
                                          edge_compat_fn = cfg_edge_compat_fn)
     if len(ret) == 0:
