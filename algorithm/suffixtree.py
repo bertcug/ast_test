@@ -6,14 +6,13 @@ class suffixtree:
     
     def __init__(self):
         self.classPath=os.path.join(os.path.dirname(os.path.abspath(__file__)), "suffixtree.jar")
-        print self.classPath
         jvmPath = jpype.getDefaultJVMPath()
         
         if jvmPath==None:
             print "Cannot get the Default JVMPath"
             return -1      
         jvmArg = "-Djava.class.path=" + self.classPath
-        print jvmArg      
+        
         if not jpype.isJVMStarted():           
             jpype.startJVM(jvmPath,jvmArg)
             
@@ -26,10 +25,9 @@ class suffixtree:
         dc = self.Decompose(srcSeri)    
         if dc.exist(vulnSeri): 
             result=self.Decompose.cut_all(vulnSeri)
-	    print result
             #print "The sub tokens with complete Syntax is:" ,result
             if result:
-                ret = self.isComplete(result)
+                ret = self.isComplete(result[0:-1])
                 if ret:
                     return True
                 else:
