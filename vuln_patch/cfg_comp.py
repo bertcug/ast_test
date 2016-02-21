@@ -11,8 +11,6 @@ from algorithm.ast import get_function_node
 from algorithm.graph import func_cfg_similarity
 import time
 import py2neo
-import multiprocessing
-from multiprocessing import Pool
 from db.models import vulnerability_info, cve_infos, get_connection
 from algorithm.ast import get_function_node
 import datetime
@@ -86,9 +84,10 @@ if __name__ == "__main__":
     for info in infos:
         try:
             func_cfg_similarity_process(vulnerability_info(info), db_conn, neo4jdb, ws)
+            wb.save("cfg_redult.xlsx")
         except Exception:
             print "error occured"
         
-    wb.save("cfg_redult.xlsx")
+    
     print "all works done!"
     

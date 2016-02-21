@@ -2,6 +2,7 @@ eclipse.preferences.version=1
 encoding//algorithm/ast.py=utf-8
 encoding//algorithm/graph.py=utf-8
 encoding//db/models.py=utf-8
+encoding//util/get_vuln_file.py=utf-8
 encoding//vuln_patch/ast_comp.py=utf-8
 encoding//vuln_patch/cfg_comp.py=utf-8
 encoding//vuln_patch/pdg_comp.py=utf-8
