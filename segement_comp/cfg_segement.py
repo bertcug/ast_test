@@ -59,9 +59,6 @@ if __name__ == "__main__":
     worksheet.append(header)
     
     for row in ws.rows:
-        if row[0].value == u"漏洞函数名":
-            continue
-        
         try:
             segement_cfg_similarity_process(row[0].value, row[1].value, neo4jdb, worksheet)
             workbook.save("cfg_segement_result.xlsx")

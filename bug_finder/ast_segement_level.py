@@ -1,4 +1,5 @@
 #coding=utf-8
+
 import sys
 sys.path.append("..")
 
@@ -18,18 +19,15 @@ from algorithm.suffixtree import suffixtree
 from db.models import get_connection
 from db.models import vulnerability_info
 
-def func_similarity_astLevel(db1, funcs, db2, func_name, suffix_tree_obj, worksheet):
+def func_similarity_segement_level(db1, funcs, db2, func_name, suffix_tree_obj, worksheet):
     # @db1 待比对数据库
-    # @db2 漏洞特征数据库
-    # @func_name 目标函数名
+    # @db2 代码段数据库
+    # @func_name 代码段构成的函数名
+    
+    start_time = time.time()
     
     target_func = get_function_ast_root(db2, func_name)
-    return_type = get_function_return_type(db2, target_func)  # 获取目标函数返回值类型
-    param_list = get_function_param_list(db2, target_func)  # 获取目标函数参数类型列表
-    
-    # funcs = getAllFuncs(db1) #获取所有函数
-    filter_funcs = filter_functions(db1, funcs, return_type, param_list) # 过滤待比较函数
-    
+     
     pattern1 = serializedAST(db2, True, True).genSerilizedAST(target_func)[0][:-1]
     pattern2 = serializedAST(db2, False, True).genSerilizedAST(target_func)[0][:-1]  # 所有类型变量映射成相同值
     pattern3 = serializedAST(db2, True, False).genSerilizedAST(target_func)[0][:-1]
@@ -43,7 +41,7 @@ def func_similarity_astLevel(db1, funcs, db2, func_name, suffix_tree_obj, worksh
     
     
     report_dict = {}
-    for func in filter_funcs:
+    for func in funcs:
         ast_root = get_function_ast_root(db1, func.properties[u'name'])
         s1 = serializedAST(db1, True, True).genSerilizedAST(ast_root)[0][:-1]
         s2 = serializedAST(db1, False, True).genSerilizedAST(ast_root)[0][:-1]
@@ -65,54 +63,39 @@ def func_similarity_astLevel(db1, funcs, db2, func_name, suffix_tree_obj, worksh
         
         if report['distinct_type_and_const'] or  report['distinct_const_no_type']\
             or report['distinct_type_no_const'] or report['no_type_no_const']:
+            end_time = time.time()
+            cost = end_time - start_time
             
             file = get_function_file(db1, func.properties[u'name'])[41:]
             worksheet.append(
                              (func_name, file, func.properties[u'name'],report['distinct_type_and_const'],
                               report['distinct_const_no_type'], report['distinct_type_no_const'],
-                              report['distinct_type_no_const'] ))
-                             
-def astlevel_comp_proc():
-    db_conn = get_connection()
-    if db_conn is None:
-        print u"数据库连接失败"
-        return
-    
-    #选择所有ffmpeg的漏洞函数   
-    cur = db_conn.cursor()
-    cur.execute("select * from vulnerability_info")
-    rets = cur.fetchall()
-    
-    func_names = []
-    for ret in rets:
-        vuln_info = vulnerability_info(ret)
-        cve_info = vuln_info.get_cve_info(db_conn)
-        soft = cve_info.get_soft(db_conn)
-        
-        if soft.software_name == "ffmpeg":
-            func_names.append(cve_info.cveid.upper().replace("-", "_") + "_VULN_" + vuln_info.vuln_func )
-    
-    #特征数据库，默认开启在7474端口
-    db2 = Graph() #默认连接7474端口
-    db1 = Graph("http://localhost:7475/db/data") #假设7475端口是某ffmpeg的图形数据库
+                              report['distinct_type_no_const'], cost))
+def segement_comp_proc():
+    db1 = Graph("http://localhost:7475/db/data/")  #假设软件数据库开启在7475端口
+    db2 = Graph("http://localhost:7476/db/data/")  #假设代码段数据库开启在7476
     suffix_tree_obj = suffixtree()
     
-    wb = Workbook()
-    ws = wb.active
-    ws.title = u"AST函数级漏洞查找测试结果"
-    header = [u'漏洞函数名', u"漏洞文件", u"漏洞函数", "distinct_type_and_const" , "distinct_const_no_type",
-              "distinct_type_no_const", "no_type_no_const", "耗时"]
-    ws.append(header)
-    wb.save("ast_func.xlsx")
+    workbook = Workbook()
+    worksheet = workbook.active
+    worksheet.title = u"AST代码段查找测试结果"
+    header = [u'代码段', u"漏洞文件", u"漏洞函数", "distinct_type_and_const" , "distinct_const_no_type",
+              "distinct_type_no_const", "no_type_no_const", u"耗时"]
+    worksheet.append(header)
+    workbook.save("ast_segement.xlsx")
     
-    all_funcs = get_all_functions(db2)
-    for name in func_names:
+    #假设只测试一个代码段函数
+    segement_funcs = ["CVE_2015_3417_VULN_COMPLETE_0",]
+    funcs = get_all_functions(db1)
+    
+    for func_name in segement_funcs:
         try:
-            func_similarity_astLevel(db1, all_funcs, db2, name, suffix_tree_obj, ws)
-            wb.save("ast_func.xlsx")
+            func_similarity_segement_level(db1, funcs, db2, func_name, suffix_tree_obj, worksheet)
+            workbook.save("ast_segement.xlsx")
         except:
-            print "error occured"
-    
-    suffix_tree_obj.close()
+            print "error occured!"
     
     print "all works done!"
+
+if __name__ == "__main__":
+    segement_comp_proc()

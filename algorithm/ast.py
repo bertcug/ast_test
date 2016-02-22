@@ -83,6 +83,31 @@ def get_all_functions(neo4j_db):
         func_nodes.append(record[0])
     return func_nodes
 
+def filter_functions(neo4jdb, funcs, return_type, param_list):
+    # @neo4jdb 待过滤函数所在数据库
+    # @funcs 待过滤函数集合
+    # @return_type 目标函数的返回值类型
+    # @param_list 目标函数的参数类型列表
+    func_list = []
+    
+    for func in funcs:
+        query = "start n=node(%d) match (n)-[:`IS_FUNCTION_OF_AST`]->(m) return m" % func._id
+        ast_root_node = neo4jdb.cypher.execute(query).one   # 肯定可以找到这个函数，而且唯一
+        
+        # filter by return type and param list
+        ret_type = get_function_return_type(neo4jdb, ast_root_node)
+        prm_list = get_function_param_list(neo4jdb, ast_root_node)
+        
+        if ret_type == return_type and prm_list == param_list:
+            func_list.append(ast_root_node)
+    
+    return func_list
+
+def get_function_node_by_ast_root(neo4jdb, ast_root):
+    query = "start m=node(%d) match(n)-[:`IS_FUNCTION_OF_AST`]->(m) return n" % ast_root._id
+    ret = neo4jdb.cypher.execute(query).one
+    return ret
+
 class serializedAST:
     
     variable_maps = {'other':'v'}  # 变量与类型映射表
