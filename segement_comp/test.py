@@ -6,9 +6,9 @@ Created on 2016年2月22日
 '''
 
 import sys
-from algorithm.graph import translate_cfg
 sys.path.append("..")
 
+from algorithm.graph import translate_cfg
 from openpyxl import load_workbook, Workbook
 from algorithm.ast import get_function_node
 from py2neo import Graph
