@@ -20,8 +20,17 @@ if __name__ == "__main__":
     neo4jdb = Graph("http://localhost:7475/db/data/")
     
     for row in ws.rows:
-        src_cfg = translate_cfg(neo4jdb, get_function_node(neo4jdb, row[0].value))
-        tar_cfg = translate_cfg(neo4jdb, get_function_node(neo4jdb, row[1].value))
+        src_func_node = get_function_node(neo4jdb, row[0].value)
+        if src_func_node is None:
+            print "vuln_segement not found"
+            continue
+        src_cfg = translate_cfg(neo4jdb, src_func_node)
+        
+        tar_func_node = get_function_node(neo4jdb, row[1].value)
+        if src_func_node is None:
+            print "patch_segement not found"
+            continue
+        tar_cfg = translate_cfg(neo4jdb, tar_func_node)
         
         node = len(src_cfg.vs) * len(tar_cfg.vs)
         edge = len(src_cfg.es) * len(tar_cfg.es)
