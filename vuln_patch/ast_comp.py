@@ -54,10 +54,10 @@ def vuln_patch_compare(conn, neo4jdb, vuln_info, worksheet, suffix_tree_obj):
     pattern3 = re.sub(prefix_str, "", pattern3)
     pattern4 = re.sub(prefix_str, "", pattern4)
     
-    s1 = serializedAST(neo4jdb, True, True).genSerilizedAST(vuln_func)[0][:-1]
-    s2 = serializedAST(neo4jdb, False, True).genSerilizedAST(vuln_func)[0][:-1]
-    s3 = serializedAST(neo4jdb, True, False).genSerilizedAST(vuln_func)[0][:-1]
-    s4 = serializedAST(neo4jdb, False, False).genSerilizedAST(vuln_func)[0][:-1]
+    s1 = serializedAST(neo4jdb, True, True).genSerilizedAST(patched_func)[0][:-1]
+    s2 = serializedAST(neo4jdb, False, True).genSerilizedAST(patched_func)[0][:-1]
+    s3 = serializedAST(neo4jdb, True, False).genSerilizedAST(patched_func)[0][:-1]
+    s4 = serializedAST(neo4jdb, False, False).genSerilizedAST(patched_func)[0][:-1]
     
     report = {}
     if suffix_tree_obj.search(s1, pattern1):
