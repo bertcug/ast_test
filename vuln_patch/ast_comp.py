@@ -61,7 +61,7 @@ def vuln_patch_compare(conn, neo4jdb, vuln_info, worksheet, suffix_tree_obj):
     
     report = {}
     if suffix_tree_obj.search(s1, pattern1):
-            report['distinct_type_and_const'] = True
+        report['distinct_type_and_const'] = True
         
     if suffix_tree_obj.search(s2, pattern2):
         report['distinct_const_no_type'] = True
@@ -133,9 +133,9 @@ def vuln_patch_comp_proc():
     for info in infos:
         try:
             vuln_patch_compare(db_conn, neo4jdb, vulnerability_info(info), ws, suffix_tree_obj)
-            wb.save("result.xlsx")
-        except Exception:
-            print "error occured"
+            wb.save("ast_result.xlsx")
+        except Exception as e:
+            print e
     
     suffix_tree_obj.close()
     

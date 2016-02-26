@@ -61,7 +61,7 @@ def get_function_return_type(neo4j_db, ast_root_node):
 
 def get_function_param_list(neo4j_db, ast_root_node):
     query = '''start ast_root=node(%d) match(ast_root)-[:`IS_AST_PARENT`]->
-    (param_list {type:'ParameterList'})-->(param {type:'Paramter'})-->
+    (param_list {type:'ParameterList'})-->(param {type:'Parameter'})-->
     (param_type {type:'ParameterType'}) return param_type.code
     ''' % ast_root_node._id
     records = neo4j_db.cypher.execute(query)
