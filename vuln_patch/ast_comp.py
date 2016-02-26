@@ -165,16 +165,24 @@ def patch_segement_comp(db1, vuln_func, db2, patch_segement, suffix_tree_obj):
     
     report = {}
     if suffix_tree_obj.search(s1, pattern1):
-            report['distinct_type_and_const'] = True
+        report['distinct_type_and_const'] = True
+    else:
+        report['distinct_type_and_const'] = False
         
     if suffix_tree_obj.search(s2, pattern2):
         report['distinct_const_no_type'] = True
+    else:
+        report['distinct_const_no_type'] = False
         
     if suffix_tree_obj.search(s3, pattern3):
         report['distinct_type_no_const'] = True
+    else:
+        report['distinct_type_no_const'] = False
         
     if suffix_tree_obj.search(s4, pattern4):
         report['no_type_no_const'] = True
+    else:
+        report['no_type_no_const'] = False
     
     end_time = time.time()
     cost = round(end_time - start_time, 2)
