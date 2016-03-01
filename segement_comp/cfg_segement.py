@@ -45,7 +45,7 @@ def segement_cfg_similarity_process(vuln_name, patch_name, neo4jdb, worksheet):
 
 if __name__ == "__main__":
     try:
-        neo4jdb = py2neo.Graph("http://127.0.0.1:7475/db/data/")
+        neo4jdb = py2neo.Graph("http://127.0.0.1:7499/db/data/")
     except Exception:
         print "数据库连接失败"
         
@@ -53,7 +53,7 @@ if __name__ == "__main__":
     ws = wb[u'Sheet3']
     
     workbook = Workbook()
-    worksheet = wb.active
+    worksheet = workbook.active
     worksheet.title = u"CFG代码段测试结果"
     header = [u'漏洞段', u"无漏洞段", u"是否匹配", u"相似度", u"耗时"]
     worksheet.append(header)
