@@ -1,4 +1,6 @@
 #coding=utf-8
+import sys
+sys.path.append("..")
 
 from openpyxl import load_workbook, Workbook
 from algorithm.ast import get_function_node
