@@ -25,7 +25,7 @@ def segement_ast_similarity_process(vuln_name, patch_name, neo4jdb, org_func_nam
                 org_func_name, type_mapping.__str__())
         worksheet.append(line)
         return
-    
+     
     #检查数据库里面是否可以找到该函数    
     patched_func = get_function_ast_root(neo4jdb, patch_name)
     if patched_func is None:
