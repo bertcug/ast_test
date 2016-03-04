@@ -89,7 +89,7 @@ def segement_ast_similarity_process(vuln_name, patch_name, neo4jdb, org_func_nam
     cost = round(end_time - start_time, 2)
     line = (vuln_name, patch_name,"success", report['distinct_type_and_const'],
             report['distinct_const_no_type'], report['distinct_type_no_const'],
-            report['distinct_type_no_const'], cost)
+            report['distinct_type_no_const'], cost, org_func_name, type_mapping.__str__())
     
     worksheet.append(line)
 
