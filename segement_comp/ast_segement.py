@@ -12,7 +12,7 @@ import re
 from algorithm.suffixtree import suffixtree
 from segement_comp import get_type_mapping_table
 
-def segement_ast_similarity_process(vuln_name, patch_name, neo4jdb, type_mapping,
+def segement_ast_similarity_process(vuln_name, patch_name, neo4jdb, org_func_name, type_mapping,
                                      worksheet, suffix_tree_obj):
     start_time = time.time()
     print "[%s] processing %s" % (datetime.datetime.now().strftime("%y-%m-%d %H:%M:%S"),
@@ -21,14 +21,16 @@ def segement_ast_similarity_process(vuln_name, patch_name, neo4jdb, type_mapping
     #检查数据库里面是否可以找到该函数
     vuln_func = get_function_ast_root(neo4jdb, vuln_name)
     if vuln_func is None:
-        line = (vuln_name, patch_name, "vuln_func_not_found", "-", "-", "-", "-", 0)
+        line = (vuln_name, patch_name, "vuln_func_not_found", "-", "-", "-", "-", 0, 
+                org_func_name, type_mapping.__str__())
         worksheet.append(line)
         return
     
     #检查数据库里面是否可以找到该函数    
     patched_func = get_function_ast_root(neo4jdb, patch_name)
     if patched_func is None:
-        line = (vuln_name, patch_name, "patch_func_not_found", "-", "-", "-", "-", 0)
+        line = (vuln_name, patch_name, "patch_func_not_found", "-", "-", "-", "-", 0, 
+                org_func_name, type_mapping.__str__())
         worksheet.append(line)
         return
     
@@ -102,13 +104,14 @@ if __name__ == "__main__":
     except Exception:
         print u"数据库连接失败:7474"
         
-    wb = load_workbook("test3.xlsx", guess_types=True)
+    wb = load_workbook("test3.xlsx", read_only=True)
     ws = wb[u'Sheet3']
     
     workbook = Workbook()
     worksheet = workbook.active
     worksheet.title = u"AST代码段测试结果"
-    header = [u'漏洞段', u"无漏洞段", u"计算状态", u"区分类型和常量",u"区分常量不区分类型",u"区分类型不区分常量",u"不区分常量和类型", u"耗时"]
+    header = [u'漏洞段', u"无漏洞段", u"计算状态", u"区分类型和常量",u"区分常量不区分类型",u"区分类型不区分常量",u"不区分常量和类型", 
+              u"耗时", u"原漏洞函数", u"类型映射"]
     worksheet.append(header)
     
     suffix_tree_obj = suffixtree()
@@ -116,12 +119,9 @@ if __name__ == "__main__":
         type_mapping = {'other':'v'}
         if row[2].value != 0:
             func_name = row[0].value[:19] + row[2].value
-            type_mapping = get_type_mapping_table(org_db, func_name)
-            row[3].value = type_mapping.__str__()
-            wb.save("test3.xlsx")
-            
+            type_mapping = get_type_mapping_table(org_db, func_name)    
         try:
-            segement_ast_similarity_process(row[0].value, row[1].value, neo4jdb, 
+            segement_ast_similarity_process(row[0].value, row[1].value, neo4jdb, row[2].value,
                                             type_mapping, worksheet, suffix_tree_obj)
             workbook.save("ast_segement_result.xlsx")
         except Exception as e:
