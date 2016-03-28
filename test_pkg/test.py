@@ -83,12 +83,12 @@ def main():
     wb = Workbook()
     ws = wb.active
     
-    db1 = Graph("http://127.0.0.1:7475/db/data/")
+    db1 = Graph("http://127.0.0.1:7476/db/data/")
     db2 = Graph()
     
     for row in data.rows:
         vuln_seg = row[0].value
-        patched_name = row[1][:22] + row[2]
+        patched_name = row[1].value[:22] + row[2]
         
         try:
             search_vuln_seg_in_patched(db1, vuln_seg, db2, patched_name, suffix_obj, ws)
