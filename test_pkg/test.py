@@ -98,6 +98,9 @@ def main():
     
     suffix_obj.close()
     print "all works done"
+
+if __name__ == "__main__":
+    main()
         
     
     
