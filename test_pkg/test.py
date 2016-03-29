@@ -8,7 +8,7 @@ import sys
 sys.path.append("..")
 import datetime
 import re
-from algorithm.ast import serializedAST, get_function_ast_root
+from algorithm.ast import serializedAST, get_function_ast_root,get_function_node_by_ast_root
 from algorithm.graph import func_cfg_similarity
 from openpyxl import load_workbook, Workbook
 from algorithm.suffixtree import suffixtree
@@ -70,7 +70,9 @@ def search_vuln_seg_in_patched(db1, vuln_seg, db2, patched_name, suffix_obj, wor
         report['no_type_no_const'] = False
     
     #begin cfg
-    match, simi = func_cfg_similarity(vuln_seg_func, db1, patched_func, db2)
+    patch_root = get_function_node_by_ast_root(db2, patched_func)
+    vuln_seg_root = get_function_node_by_ast_root(db1, vuln_seg_func)
+    match, simi = func_cfg_similarity(patch_root, db2, vuln_seg_root, db1)
     
     worksheet.append( (vuln_seg, patched_name, "success", report["distinct_type_and_const"],
                        report["distinct_const_no_type"], report["distinct_type_no_const"],
@@ -88,7 +90,7 @@ def main():
     
     for row in data.rows:
         vuln_seg = row[0].value
-        patched_name = row[1].value[:22] + row[2]
+        patched_name = vuln_seg[:14] + "PATCHED_" + row[2].value
         
         try:
             search_vuln_seg_in_patched(db1, vuln_seg, db2, patched_name, suffix_obj, ws)

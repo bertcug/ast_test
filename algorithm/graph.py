@@ -164,6 +164,7 @@ def cal_similarity(srcCFG,tarCFG,vertexMap):
     sum = 0
     if vertexMap:
         sum = len(vertexMap)
+
     for i in range(sum) :
         if srcCFG.vs[vertexMap[i]]['code'] == tarCFG.vs[i]['code'] :
             count +=1

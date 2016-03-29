@@ -49,7 +49,7 @@ def get_out_nodes(neo4j_db, node, edge_property=None):
     return nodes
 
 def get_out_node_property_by_type(neo4j_db, node, type, property_name):
-    query = "start n=node(%d) match (n)-[:`IS_AST_PASRENT`]->(m {type:'%s'}) return m.%s" % (node._id, type, property_name)
+    query = "start n=node(%d) match (n)-[:`IS_AST_PARENT`]->(m {type:'%s'}) return m.%s" % (node._id, type, property_name)
     records = neo4j_db.cypher.execute(query)
     return records.one
  
@@ -163,8 +163,8 @@ class serializedAST:
         
         if nodes:
             for n in nodes:
-                variable = get_out_node_property_by_type(self.neo4jdb, node, 'Identifier', 'code')
-                var_type = get_out_node_property_by_type(self.neo4jdb, node, 'ParamterType', 'code')
+                variable = get_out_node_property_by_type(self.neo4jdb, n, 'Identifier', 'code')
+                var_type = get_out_node_property_by_type(self.neo4jdb, n, 'ParameterType', 'code')
                 self.variable_maps[variable] = var_type
     
     # 处理变量声明语句：
