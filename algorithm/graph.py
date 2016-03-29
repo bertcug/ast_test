@@ -107,6 +107,42 @@ def translate_cfg(neo4j_db, function_node):
     
     return g
 
+def translate_target_cfg(neo4j_db, function_node):
+    cfg_edges = get_cfg_edges(neo4j_db, function_node)
+    
+    #create igraph cfg
+    g = Graph(directed = True)
+    
+    #add edge and edge properties
+    for edge in cfg_edges :
+        start_node = edge.start_node
+        end_node = edge.end_node
+        
+        if start_node is None or end_node is None:
+            print "edge has no start or end node"
+        
+        add_edge = True
+        
+        try:
+            g.vs.find(name=str(start_node._id))
+        except:
+            if start_node.properties['type'] == u'CFGEntryNode':
+                add_edge = False
+            else:
+                g.add_vertex(name=str(start_node._id), **get_node_properties(start_node.properties))
+        
+        try:
+            g.vs.find(name=str(end_node._id))
+        except:
+            if start_node.properties['type'] == u'CFGExitNode':
+                add_edge = False
+            else:
+                g.add_vertex(name=str(end_node._id), **get_node_properties(end_node.properties))
+        
+        g.add_edge(str(start_node._id), str(end_node._id),**get_cfg_edge_properties(edge.properties))
+    
+    return g
+
 def translate_pdg(neo4j_db, function_node):
     cdg_edges = get_cdg_edges(neo4j_db, function_node)
     ddg_edges = get_ddg_edges(neo4j_db, function_node)
@@ -172,8 +208,8 @@ def cal_similarity(srcCFG,tarCFG,vertexMap):
 
 def func_cfg_similarity(func1, db1, func2, db2):
     srcCFG = translate_cfg(db1, func1)
-    targetCFG = translate_cfg(db2, func2)
-    
+    targetCFG = translate_target_cfg(db2, func2)
+      
     #如果节点太多，就不进行计算, 两个图的节点成绩超过10000不进行计算
     if len(srcCFG.vs) * len(targetCFG.vs)  > 10000:
         return False, -1
