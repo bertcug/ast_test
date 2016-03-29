@@ -139,7 +139,8 @@ def translate_target_cfg(neo4j_db, function_node):
             else:
                 g.add_vertex(name=str(end_node._id), **get_node_properties(end_node.properties))
         
-        g.add_edge(str(start_node._id), str(end_node._id),**get_cfg_edge_properties(edge.properties))
+        if add_edge:
+            g.add_edge(str(start_node._id), str(end_node._id),**get_cfg_edge_properties(edge.properties))
     
     return g
 
