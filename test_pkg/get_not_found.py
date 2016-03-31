@@ -1,10 +1,8 @@
 #coding=utf-8
 '''
 Created on 2016年3月31日
-
 @author: Bert
 '''
-
 import sys
 sys.path.append("..")
 
@@ -14,7 +12,7 @@ from py2neo import Graph
 
 if __name__ == "__main__":
     
-    db = Graph("http://127.0.0.1/db/data/")
+    db = Graph("http://127.0.0.1:7476/db/data/")
     #wireshark diff
     ws1 = load_workbook("Wireshark.xlsx")['Sheet3']
     for row in ws1.rows:
