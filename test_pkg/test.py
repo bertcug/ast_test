@@ -23,7 +23,13 @@ def search_vuln_seg_in_patched(db1, vuln_seg, db2, patched_name, suffix_obj, wor
                                    datetime.datetime.now().strftime("%y-%m-%d %H:%M:%S"),
                                    vuln_seg, patched_name)
     
-    vuln_seg_func = get_function_ast_root(db1, vuln_seg)
+    vuln_seg_func = None
+    try:
+        vuln_seg_func = get_function_ast_root(db1, vuln_seg)
+    except:
+        vuln_seg_func = get_function_ast_root(db1, patched_name[22:])
+        vuln_seg = patched_name[22:]
+        
     if vuln_seg_func is None:
         print "%s is not found" % vuln_seg
         worksheet.append( (vuln_seg, patched_name, "vuln_not_found","-", "-","-", "-","-","-") )
@@ -193,5 +199,7 @@ if __name__ == "__main__":
     p1.start()
     p2.start()
     p3.start()
+    
+    print "all done"
     
     
