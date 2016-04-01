@@ -42,3 +42,6 @@ def get_var_mapping():
         ws.append((vuln_name, var_map.__str__()))
     wb.save("ffmpeg_var_map.xlsx")
     print "done!"
+
+if __name__ == "__main__":
+    get_var_mapping()
