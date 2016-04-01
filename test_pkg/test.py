@@ -15,8 +15,6 @@ from algorithm.suffixtree import suffixtree
 from py2neo import Graph
 from segement_comp import get_type_mapping_table
 
-from multiprocessing import Process
-
 def search_vuln_seg_in_patched(db1, vuln_seg, db2, patched_name, suffix_obj, worksheet):
     
     print "[%s] processing %s VS %s" % (
@@ -193,13 +191,14 @@ def code_reuse():
     print "code reuse all works done"
       
 if __name__ == "__main__":
-    p1 = Process(target=wireshark_diff)
-    p2 = Process(target=ffmpeg_diff)
-    p3 = Process(target=code_reuse)
-    p1.start()
-    p2.start()
-    p3.start()
-    
-    print "all done"
+    arg = sys.argv[1]
+    if arg == "wireshark":
+        wireshark_diff()
+    elif arg == "ffmpeg":
+        ffmpeg_diff()
+    elif arg == "reuse":
+        code_reuse() 
+    else:
+        print "argument error"
     
     
