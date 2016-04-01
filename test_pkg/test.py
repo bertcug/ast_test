@@ -117,7 +117,7 @@ def wireshark_diff():
         
         try:
             search_vuln_seg_in_patched(db1, vuln_seg, db2, patched_name, suffix_obj, ws)
-            wb.save("result.xlsx")
+            wb.save("wireshark_diff.xlsx")
         except Exception as e:
             print e
     
