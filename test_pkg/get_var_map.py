@@ -40,5 +40,5 @@ def get_var_mapping():
         vuln_name = cve_info.cveid.replace("-", "_").upper() + "_VULN_" + vuln_info.vuln_func
         var_map = get_type_mapping_table(neo4j_db, vuln_name)
         ws.append((vuln_name, var_map.__str__()))
-    
+    wb.save("ffmpeg_var_map.xlsx")
     print "done!"
