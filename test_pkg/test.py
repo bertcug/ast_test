@@ -15,22 +15,20 @@ from algorithm.suffixtree import suffixtree
 from py2neo import Graph
 from segement_comp import get_type_mapping_table
 
-def search_vuln_seg_in_patched(db1, vuln_seg, db2, patched_name, suffix_obj, worksheet):
+def search_vuln_seg_in_patched(db1, vuln_seg, vuln_func, db2, patched_name, suffix_obj, worksheet):
     
     print "[%s] processing %s VS %s" % (
                                    datetime.datetime.now().strftime("%y-%m-%d %H:%M:%S"),
                                    vuln_seg, patched_name)
     
-    vuln_seg_func = None
-    try:
-        vuln_seg_func = get_function_ast_root(db1, vuln_seg)
-    except:
-        vuln_seg_func = get_function_ast_root(db1, patched_name[22:])
-        vuln_seg = patched_name[22:]
+    
+    vuln_seg_func = get_function_ast_root(db1, vuln_seg)
+    if vuln_seg_func is None:
+        vuln_seg_func = get_function_ast_root(db1, vuln_func)
         
     if vuln_seg_func is None:
-        print "%s is not found" % vuln_seg
-        worksheet.append( (vuln_seg, patched_name, "vuln_not_found","-", "-","-", "-","-","-") )
+        print "%s  %s not found" % (vuln_seg, vuln_func)
+        worksheet.append( (vuln_seg+"-"+vuln_func, patched_name, "vuln_not_found","-", "-","-", "-","-","-") )
         return
     
     patched_func = get_function_ast_root(db2, patched_name)
@@ -114,7 +112,7 @@ def wireshark_diff():
         patched_name = vuln_seg[:14] + "PATCHED_" + row[2].value
         
         try:
-            search_vuln_seg_in_patched(db1, vuln_seg, db2, patched_name, suffix_obj, ws)
+            search_vuln_seg_in_patched(db1, vuln_seg, row[2].value, db2, patched_name, suffix_obj, ws)
             wb.save("wireshark_diff.xlsx")
         except Exception as e:
             print e
@@ -137,7 +135,7 @@ def ffmpeg_diff():
         patched_name = vuln_seg[:14] + "PATCHED_" + row[2].value
         
         try:
-            search_vuln_seg_in_patched(db1, vuln_seg, db2, patched_name, suffix_obj, ws)
+            search_vuln_seg_in_patched(db1, vuln_seg, row[2].value, db2, patched_name, suffix_obj, ws)
             wb.save("ffmpeg_diff.xlsx")
         except Exception as e:
             print e
@@ -149,7 +147,7 @@ def get_segements(segements, patch_func_name):
     cveid = patch_func_name[0:13]
     ret = []
     for segement in segements:
-        if segement.startswith(cveid):
+        if segement[0].startswith(cveid):
             ret.append(segement)
     return ret    
 
@@ -158,10 +156,10 @@ def code_reuse():
     
     wireshark_segement_list = []
     for row in wb['wireshark'].rows:
-        wireshark_segement_list.append(row[0].value)
+        wireshark_segement_list.append((row[0].value, row[1].value))
     ffmpeg_segement_list = []
     for row in wb['ffmpeg'].rows:
-        ffmpeg_segement_list.append(row[0].value)
+        ffmpeg_segement_list.append((row[0].value, row[1].value))
     
     db = Graph("http://127.0.0.1:7476/db/data/")
     suffix_obj = suffixtree()
@@ -172,7 +170,7 @@ def code_reuse():
         test_list = get_segements(wireshark_segement_list, row[0].value)
         for test in test_list:
             try:
-                search_vuln_seg_in_patched(db, test, db, row[0].value, suffix_obj, ws)
+                search_vuln_seg_in_patched(db, test[0], test[1], db, row[0].value, suffix_obj, ws)
                 result.save("code_reuse.xlsx")
             except Exception as e:
                 print e
@@ -183,7 +181,7 @@ def code_reuse():
         test_list = get_segements(ffmpeg_segement_list, row[0].value)
         for test in test_list:
             try:
-                search_vuln_seg_in_patched(db, test, db, row[0].value, suffix_obj, ws)
+                search_vuln_seg_in_patched(db, test[0], test[1], db, row[0].value, suffix_obj, ws)
                 result.save("code_reuse.xlsx")
             except Exception as e:
                 print e  
