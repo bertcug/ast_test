@@ -142,6 +142,29 @@ def ffmpeg_diff():
     
     suffix_obj.close()
     print "ffmpeg all works done"
+    
+def linux_diff():
+    data = load_workbook("linux.xlsx", read_only=True)[u'Sheet3']
+    suffix_obj = suffixtree()
+    
+    wb = Workbook()
+    ws = wb.active
+    
+    db1 = Graph("http://127.0.0.1:7476/db/data/")
+    db2 = Graph()
+    
+    for row in data.rows:
+        vuln_seg = row[0].value
+        patched_name = vuln_seg[:14] + "PATCHED_" + row[2].value
+        
+        try:
+            search_vuln_seg_in_patched(db1, vuln_seg, row[2].value, db2, patched_name, suffix_obj, ws)
+            wb.save("linux_diff.xlsx")
+        except Exception as e:
+            print e
+    
+    suffix_obj.close()
+    print "linux all works done"
 
 def get_segements(segements, patch_func_name):
     cveid = patch_func_name[0:13]
@@ -195,7 +218,9 @@ if __name__ == "__main__":
     elif arg == "ffmpeg":
         ffmpeg_diff()
     elif arg == "reuse":
-        code_reuse() 
+        code_reuse()
+    elif arg == "linux":
+        linux_diff()
     else:
         print "argument error"
     
