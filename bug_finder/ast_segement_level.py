@@ -71,31 +71,63 @@ def func_similarity_segement_level(db1, funcs, db2, func_name, suffix_tree_obj, 
                              (func_name, file, func.properties[u'name'],report['distinct_type_and_const'],
                               report['distinct_const_no_type'], report['distinct_type_no_const'],
                               report['distinct_type_no_const'], cost))
-def segement_comp_proc():
+def ffmpeg_search_proc():
     db1 = Graph("http://localhost:7475/db/data/")  #假设软件数据库开启在7475端口
-    db2 = Graph("http://localhost:7476/db/data/")  #假设代码段数据库开启在7476
+    db2 = Graph("http://localhost:7473/db/data/")  #假设代码段数据库开启在7476
     suffix_tree_obj = suffixtree()
     
     workbook = Workbook()
     worksheet = workbook.active
-    worksheet.title = u"AST代码段查找测试结果"
+    worksheet.title = u"ffmpeg代码段查找测试结果"
     header = [u'代码段', u"漏洞文件", u"漏洞函数", "distinct_type_and_const" , "distinct_const_no_type",
               "distinct_type_no_const", "no_type_no_const", u"耗时"]
     worksheet.append(header)
-    workbook.save("ast_segement.xlsx")
+    workbook.save("ffmpeg_search.xlsx")
     
     #假设只测试一个代码段函数
-    segement_funcs = ["CVE_2015_3417_VULN_COMPLETE_0",]
+    segement_funcs = ["CVE-2013-0861_VULN_COMPLETE_0",]
     funcs = get_all_functions(db1)
     
     for func_name in segement_funcs:
         try:
             func_similarity_segement_level(db1, funcs, db2, func_name, suffix_tree_obj, worksheet)
-            workbook.save("ast_segement.xlsx")
+            workbook.save("ffmpeg_search.xlsx")
         except:
             print "error occured!"
     
     print "all works done!"
 
+def wireshark_search_proc():
+    db1 = Graph("http://localhost:7476/db/data/")  #假设软件数据库开启在7475端口
+    db2 = Graph("http://localhost:7473/db/data/")  #假设代码段数据库开启在7476
+    suffix_tree_obj = suffixtree()
+    
+    workbook = Workbook()
+    worksheet = workbook.active
+    worksheet.title = u"wireshark代码段查找测试结果"
+    header = [u'代码段', u"漏洞文件", u"漏洞函数", "distinct_type_and_const" , "distinct_const_no_type",
+              "distinct_type_no_const", "no_type_no_const", u"耗时"]
+    worksheet.append(header)
+    workbook.save("wireshark_search.xlsx")
+    
+    #假设只测试一个代码段函数
+    segement_funcs = ["CVE-2013-4933_VULN_COMPLETE_0",]
+    funcs = get_all_functions(db1)
+    
+    for func_name in segement_funcs:
+        try:
+            func_similarity_segement_level(db1, funcs, db2, func_name, suffix_tree_obj, worksheet)
+            workbook.save("wireshark_search.xlsx")
+        except:
+            print "error occured!"
+    
+    print "all works done!"
+    
 if __name__ == "__main__":
-    segement_comp_proc()
+    arg = sys.argv[1]
+    if arg == "wireshark":
+        wireshark_search_proc()
+    elif arg == "ffmpeg":
+        ffmpeg_search_proc()
+    else:
+        print "error"
