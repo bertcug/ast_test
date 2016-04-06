@@ -104,7 +104,7 @@ def wireshark_diff():
     wb = Workbook()
     ws = wb.active
     
-    db1 = Graph("http://127.0.0.1:7476/db/data/")
+    db1 = Graph("http://127.0.0.1:7473/db/data/")
     db2 = Graph()
     
     for row in data.rows:
@@ -127,7 +127,7 @@ def ffmpeg_diff():
     wb = Workbook()
     ws = wb.active
     
-    db1 = Graph("http://127.0.0.1:7476/db/data/")
+    db1 = Graph("http://127.0.0.1:7473/db/data/")
     db2 = Graph()
     
     for row in data.rows:
@@ -150,7 +150,7 @@ def linux_diff():
     wb = Workbook()
     ws = wb.active
     
-    db1 = Graph("http://127.0.0.1:7476/db/data/")
+    db1 = Graph("http://127.0.0.1:7473/db/data/")
     db2 = Graph()
     
     for row in data.rows:
@@ -184,7 +184,7 @@ def code_reuse():
     for row in wb['ffmpeg'].rows:
         ffmpeg_segement_list.append((row[0].value, row[1].value))
     
-    db = Graph("http://127.0.0.1:7476/db/data/")
+    db = Graph("http://127.0.0.1:7473/db/data/")
     suffix_obj = suffixtree()
     #wireshark
     result = Workbook()
