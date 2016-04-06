@@ -4,6 +4,7 @@ import sys
 sys.path.append("..")
 
 import time
+import datetime
 import re
 from py2neo import Graph
 from openpyxl import Workbook
@@ -42,6 +43,9 @@ def func_similarity_segement_level(db1, funcs, db2, func_name, suffix_tree_obj, 
     
     report_dict = {}
     for func in funcs:
+        print "[%s] processing %s VS %s" % (
+                                   datetime.datetime.now().strftime("%y-%m-%d %H:%M:%S"),
+                                   func_name,func.properties[u'name'] )
         ast_root = get_function_ast_root(db1, func.properties[u'name'])
         s1 = serializedAST(db1, True, True).genSerilizedAST(ast_root)[0][:-1]
         s2 = serializedAST(db1, False, True).genSerilizedAST(ast_root)[0][:-1]
@@ -72,8 +76,8 @@ def func_similarity_segement_level(db1, funcs, db2, func_name, suffix_tree_obj, 
                               report['distinct_const_no_type'], report['distinct_type_no_const'],
                               report['distinct_type_no_const'], cost))
 def ffmpeg_search_proc():
-    db1 = Graph("http://localhost:7475/db/data/")  #假设软件数据库开启在7475端口
-    db2 = Graph("http://localhost:7473/db/data/")  #假设代码段数据库开启在7476
+    db1 = Graph("http://127.0.0.1:7475/db/data/")  #假设软件数据库开启在7475端口
+    db2 = Graph("http://127.0.0.1:7473/db/data/")  #假设代码段数据库开启在7476
     suffix_tree_obj = suffixtree()
     
     workbook = Workbook()
