@@ -2,7 +2,6 @@
 
 import sys
 sys.path.append("..")
-
 import time
 import datetime
 import re
@@ -10,15 +9,11 @@ from py2neo import Graph
 from openpyxl import Workbook
 
 from algorithm.ast import get_function_ast_root
-from algorithm.ast import get_function_return_type
-from algorithm.ast import get_function_param_list
-from algorithm.ast import filter_functions
 from algorithm.ast import get_all_functions
 from algorithm.ast import serializedAST
 from algorithm.ast import get_function_file
 from algorithm.suffixtree import suffixtree
-from db.models import get_connection
-from db.models import vulnerability_info
+
 
 def func_similarity_segement_level(db1, funcs, db2, func_name, suffix_tree_obj, worksheet):
     # @db1 待比对数据库
@@ -40,8 +35,6 @@ def func_similarity_segement_level(db1, funcs, db2, func_name, suffix_tree_obj, 
     pattern3 = re.sub(prefix_str, "", pattern3)
     pattern4 = re.sub(prefix_str, "", pattern4)
     
-    
-    report_dict = {}
     for func in funcs:
         print "[%s] processing %s VS %s" % (
                                    datetime.datetime.now().strftime("%y-%m-%d %H:%M:%S"),
@@ -70,10 +63,12 @@ def func_similarity_segement_level(db1, funcs, db2, func_name, suffix_tree_obj, 
             end_time = time.time()
             cost = end_time - start_time
             
-            file = get_function_file(db1, func.properties[u'name'])[41:]
+            f = get_function_file(db1, func.properties[u'name'])[41:]
             worksheet.append(
-                             (func_name, file, func.properties[u'name'],report['distinct_type_and_const'],
-                              report['distinct_const_no_type'], report['distinct_type_no_const'],
+                             (func_name, f, func.properties[u'name'],
+                              report['distinct_type_and_const'],
+                              report['distinct_const_no_type'],
+                              report['distinct_type_no_const'],
                               report['distinct_type_no_const'], cost))
 def ffmpeg_search_proc():
     db1 = Graph("http://127.0.0.1:7475/db/data/")  #假设软件数据库开启在7475端口
@@ -135,3 +130,4 @@ if __name__ == "__main__":
         ffmpeg_search_proc()
     else:
         print "error"
+        
