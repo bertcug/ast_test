@@ -91,8 +91,9 @@ def ffmpeg_search_proc():
         try:
             func_similarity_segement_level(db1, funcs, db2, func_name, suffix_tree_obj, worksheet)
             workbook.save("ffmpeg_search.xlsx")
-        except:
+        except Exception as e:
             print "error occured!"
+            print e
     
     print "all works done!"
 
