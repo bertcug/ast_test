@@ -43,7 +43,8 @@ def search_vuln_seg_in_patched(db1, vuln_seg, vuln_func, db2, patched_name, suff
     o3 = serializedAST(db1, True, False)
     o4 = serializedAST(db1, False, False)
     
-    type_mapping = get_type_mapping_table(db2, patched_name)
+    vuln_name = vuln_seg[:14] + "_VULN_" + vuln_func
+    type_mapping = get_type_mapping_table(db2, vuln_name)
     
     o1.variable_maps = type_mapping
     o2.variable_maps = type_mapping
@@ -90,13 +91,13 @@ def search_vuln_seg_in_patched(db1, vuln_seg, vuln_func, db2, patched_name, suff
         report['no_type_no_const'] = False
     
     #begin cfg
-    patch_root = get_function_node_by_ast_root(db2, patched_func)
-    vuln_seg_root = get_function_node_by_ast_root(db1, vuln_seg_func)
-    match, simi = func_cfg_similarity(patch_root, db2, vuln_seg_root, db1)
+#     patch_root = get_function_node_by_ast_root(db2, patched_func)
+#     vuln_seg_root = get_function_node_by_ast_root(db1, vuln_seg_func)
+#     match, simi = func_cfg_similarity(patch_root, db2, vuln_seg_root, db1)
     
     worksheet.append( (vuln_seg, patched_name, "success", report["distinct_type_and_const"],
                        report["distinct_const_no_type"], report["distinct_type_no_const"],
-                       report['no_type_no_const'], match, simi) )
+                       report['no_type_no_const']) )
     
 def wireshark_diff():
     data = load_workbook("Wireshark.xlsx", read_only=True)[u'Sheet3']
@@ -174,7 +175,7 @@ def lose_test():
     wb = Workbook()
     
     db1 = Graph("http://127.0.0.1:7473/db/data/")
-    db2 = graph()
+    db2 = Graph()
     
     #ffmpeg
     ffmpeg = wb.create_sheet("ffmpeg", 0)
