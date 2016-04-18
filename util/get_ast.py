@@ -1,4 +1,6 @@
 # -*- coding:utf-8 -*-
+import sys
+sys.path.append("..")
 
 from algorithm.ast import serializedAST, get_function_ast_root
 from py2neo import Graph
