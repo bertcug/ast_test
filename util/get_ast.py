@@ -8,7 +8,7 @@ import argparse
 
 if __name__ == "__main__":
     parse = argparse.ArgumentParser()
-    parse.add_argument("func", "--func", help="function name")
+    parse.add_argument("-f", "--func", help="function name")
     args = parse.parse_args()
     
     func = args.func
