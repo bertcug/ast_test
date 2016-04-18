@@ -31,7 +31,7 @@ def get_var_mapping():
     infos = []
     for ret in rets:
         soft = vulnerability_info(ret).get_cve_info(db_conn).get_soft(db_conn)
-        if soft.software_name == "ffmpeg":
+        if soft.software_name == "wireshark":
             infos.append(ret)
     
     for info in infos:
@@ -40,7 +40,7 @@ def get_var_mapping():
         vuln_name = cve_info.cveid.replace("-", "_").upper() + "_VULN_" + vuln_info.vuln_func
         var_map = get_type_mapping_table(neo4j_db, vuln_name)
         ws.append((vuln_name, var_map.__str__()))
-    wb.save("ffmpeg_var_map.xlsx")
+    wb.save("wireshark_var_map.xlsx")
     print "done!"
 
 if __name__ == "__main__":

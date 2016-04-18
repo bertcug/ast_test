@@ -7,22 +7,40 @@ import datetime
 import re
 from py2neo import Graph
 from openpyxl import Workbook
+import MySQLdb
+from multiprocessing import Pool, Process
 
 from algorithm.ast import get_function_ast_root
-from algorithm.ast import get_all_functions
+from algorithm.ast import get_all_functions, get_function_node
 from algorithm.ast import serializedAST
 from algorithm.ast import get_function_file
 from algorithm.suffixtree import suffixtree
 
 
-def func_similarity_segement_level(db1, funcs, db2, func_name, suffix_tree_obj, worksheet):
+def func_similarity_segement_level(db1, funcs, db2, func_name, table_name):
     # @db1 待比对数据库
     # @db2 代码段数据库
     # @func_name 代码段构成的函数名
+    neo4j_db1 = Graph(db1)
+    neo4j_db2 = Graph(db2)
     
-    start_time = time.time()
+    db_conn = MySQLdb.Connect(host="127.0.0.1",port=3306,
+                              user="root", passwd="123456",db="test_data")
     
-    target_func = get_function_ast_root(db2, func_name)
+    cur = db_conn.cursor()
+    cur.exceute("create table if not exists %s( vuln_func_name varchar(50),"\
+               "func_name varchar(50), file_path varchar(100), status varchar(20),"\
+               "distinct_type_and_const bool, distinct_const_no_type bool,"\
+               "distinct_type_no_const bool, distinct_type_no_const bool,"\
+               "primary key(vuln_func_name, func_name)" % table_name)
+    db_conn.commit()
+    
+    suffix_tree_obj = suffixtree()
+    
+    target_func = get_function_ast_root(neo4j_db2, func_name)
+    if target_func is None:
+        print "%s is not found" % func_name
+        return
      
     pattern1 = serializedAST(db2, True, True).genSerilizedAST(target_func)[0][:-1]
     pattern2 = serializedAST(db2, False, True).genSerilizedAST(target_func)[0][:-1]  # 所有类型变量映射成相同值
@@ -36,91 +54,178 @@ def func_similarity_segement_level(db1, funcs, db2, func_name, suffix_tree_obj, 
     pattern4 = re.sub(prefix_str, "", pattern4)
     
     for func in funcs:
-        print "[%s] processing %s VS %s" % (
-                                   datetime.datetime.now().strftime("%y-%m-%d %H:%M:%S"),
-                                   func_name,func.properties[u'name'] )
-        ast_root = get_function_ast_root(db1, func.properties[u'name'])
+        count = cur.execute("select * from ast_search where vuln_func_name=%s and func_name=%s"
+                           % (func_name, func.properties[u'name']))
+        if count > 0:
+            continue
+        
+        ast_root = get_function_ast_root(neo4j_db1, func.properties[u'name'])
+        if ast_root is None:
+            cur.execute("insert into ast_search values(%s, %s, %s, %s, %d, %d, %d, %d)"
+                       % (func_name, func.properties[u'name'], None, "func_not_found",0,0,0,0))
+            db_conn.commit()
+            continue
+        
         s1 = serializedAST(db1, True, True).genSerilizedAST(ast_root)[0][:-1]
         s2 = serializedAST(db1, False, True).genSerilizedAST(ast_root)[0][:-1]
         s3 = serializedAST(db1, True, False).genSerilizedAST(ast_root)[0][:-1]
         s4 = serializedAST(db1, False, False).genSerilizedAST(ast_root)[0][:-1] 
         
+        f = get_function_file(neo4j_db1, func.properties[u'name'])[21:]
+        
         report = {}
         if suffix_tree_obj.search(s1, pattern1):
-            report['distinct_type_and_const'] = True
+            report['distinct_type_and_const'] = 1
+        else:
+            report['distinct_type_and_const'] = 0
         
         if suffix_tree_obj.search(s2, pattern2):
-            report['distinct_const_no_type'] = True
+            report['distinct_const_no_type'] = 1
+        else:
+            report['distinct_const_no_type'] = 0
         
         if suffix_tree_obj.search(s3, pattern3):
-            report['distinct_type_no_const'] = True
+            report['distinct_type_no_const'] = 1
+        else:
+            report['distinct_type_no_const'] = 0
         
         if suffix_tree_obj.search(s4, pattern4):
-            report['distinct_type_no_const'] = True
+            report['distinct_type_no_const'] = 1
+        else:
+            report['distinct_type_no_const'] = 0
         
-        if report['distinct_type_and_const'] or  report['distinct_const_no_type']\
-            or report['distinct_type_no_const'] or report['no_type_no_const']:
-            end_time = time.time()
-            cost = end_time - start_time
-            
-            f = get_function_file(db1, func.properties[u'name'])[41:]
-            worksheet.append(
-                             (func_name, f, func.properties[u'name'],
+        cur.execute("insert into ast_search values(%s, %s, %s, %s, %d, %d, %d, %d)"\
+                   % (func_name, func.properties[u'name'], f, "success",
                               report['distinct_type_and_const'],
                               report['distinct_const_no_type'],
                               report['distinct_type_no_const'],
-                              report['distinct_type_no_const'], cost))
+                              report['distinct_type_no_const'])
+                   )
+        db_conn.commit()
+
+def search_vuln_seg_in_patched(db1, vuln_seg, vuln_func, db2, patched_name, suffix_obj, worksheet):
+    
+    print "[%s] processing %s VS %s" % (
+                                   datetime.datetime.now().strftime("%y-%m-%d %H:%M:%S"),
+                                   vuln_seg, patched_name)
+    
+    
+    vuln_seg_func = get_function_ast_root(db1, vuln_seg)
+    if vuln_seg_func is None:
+        vuln_seg_func = get_function_ast_root(db1, vuln_func)
+        
+    if vuln_seg_func is None:
+        print "%s  %s not found" % (vuln_seg, vuln_func)
+        worksheet.append( (vuln_seg+"-"+vuln_func, patched_name, "vuln_not_found","-", "-","-", "-","-","-") )
+        return
+    
+    patched_func = get_function_ast_root(db2, patched_name)
+    if patched_func is None:
+        print "%s is not found" % patched_name
+        worksheet.append( (vuln_seg, patched_name, "patch_not_found","-", "-", "-", "-","-","-") )
+        return
+    
+    o1 = serializedAST(db1, True, True)
+    o2 = serializedAST(db1, False, True)
+    o3 = serializedAST(db1, True, False)
+    o4 = serializedAST(db1, False, False)
+    
+    type_mapping = get_type_mapping_table(db2, patched_name)
+    
+    o1.variable_maps = type_mapping
+    o2.variable_maps = type_mapping
+    o3.variable_maps = type_mapping
+    o4.variable_maps = type_mapping
+    
+    #序列化AST返回值是一个数组，0元素是序列化的AST字符串，1元素是节点个数，AST字符串以;结尾，需要去掉结尾的;
+    pattern1 = o1.genSerilizedAST(vuln_seg_func)[0][:-1]
+    pattern2 = o2.genSerilizedAST(vuln_seg_func)[0][:-1] 
+    pattern3 = o3.genSerilizedAST(vuln_seg_func)[0][:-1]
+    pattern4 = o4.genSerilizedAST(vuln_seg_func)[0][:-1]
+    
+    #delete FunctionDef and CompoundStatement node
+    prefix_str = r"^FunctionDef\([0-9]+\);CompoundStatement\([0-9]+\);"
+    pattern1 = re.sub(prefix_str, "", pattern1)
+    pattern2 = re.sub(prefix_str, "", pattern2)
+    pattern3 = re.sub(prefix_str, "", pattern3)
+    pattern4 = re.sub(prefix_str, "", pattern4)
+    
+    s1 = serializedAST(db2, True, True).genSerilizedAST(patched_func)[0][:-1]
+    s2 = serializedAST(db2, False, True).genSerilizedAST(patched_func)[0][:-1]
+    s3 = serializedAST(db2, True, False).genSerilizedAST(patched_func)[0][:-1]
+    s4 = serializedAST(db2, False, False).genSerilizedAST(patched_func)[0][:-1]
+      
+    report = {}
+    if suffix_obj.search(s1, pattern1):
+        report['distinct_type_and_const'] = True
+    else:
+        report['distinct_type_and_const'] = False
+        
+    if suffix_obj.search(s2, pattern2):
+        report['distinct_const_no_type'] = True
+    else:
+        report['distinct_const_no_type'] = False
+        
+    if suffix_obj.search(s3, pattern3):
+        report['distinct_type_no_const'] = True
+    else:
+        report['distinct_type_no_const'] = False
+        
+    if suffix_obj.search(s4, pattern4):
+        report['no_type_no_const'] = True
+    else:
+        report['no_type_no_const'] = False
+    
+    #begin cfg
+    patch_root = get_function_node_by_ast_root(db2, patched_func)
+    vuln_seg_root = get_function_node_by_ast_root(db1, vuln_seg_func)
+    match, simi = func_cfg_similarity(patch_root, db2, vuln_seg_root, db1)
+    
+    worksheet.append( (vuln_seg, patched_name, "success", report["distinct_type_and_const"],
+                       report["distinct_const_no_type"], report["distinct_type_no_const"],
+                       report['no_type_no_const'], match, simi) )        
 def ffmpeg_search_proc():
-    db1 = Graph("http://127.0.0.1:7475/db/data/")  #假设软件数据库开启在7475端口
-    db2 = Graph("http://127.0.0.1:7473/db/data/")  #假设代码段数据库开启在7476
-    suffix_tree_obj = suffixtree()
+    db1 = "http://127.0.0.1:7475/db/data/" #假设软件数据库开启在7475端口
+    db2 = "http://127.0.0.1:7473/db/data/" #假设代码段数据库开启在7476
     
-    workbook = Workbook()
-    worksheet = workbook.active
-    worksheet.title = u"ffmpeg代码段查找测试结果"
-    header = [u'代码段', u"漏洞文件", u"漏洞函数", "distinct_type_and_const" , "distinct_const_no_type",
-              "distinct_type_no_const", "no_type_no_const", u"耗时"]
-    worksheet.append(header)
-    workbook.save("ffmpeg_search.xlsx")
-    
+    neo4j_db = Graph(db1)
     #假设只测试一个代码段函数
     segement_funcs = ["CVE-2013-0861_VULN_COMPLETE_0",]
-    funcs = get_all_functions(db1)
+    #######
+    func = get_function_node(neo4j_db, "init_opts")
+    funcs = [func,]
+    #funcs = get_all_functions(Graph(db1))
+    print "get all functions OK"
     
-    for func_name in segement_funcs:
-        try:
-            func_similarity_segement_level(db1, funcs, db2, func_name, suffix_tree_obj, worksheet)
-            workbook.save("ffmpeg_search.xlsx")
-        except Exception as e:
-            print "error occured!"
-            print e
-    
+    for segement in segement_funcs:
+        func_similarity_segement_level(db1, funcs, db2, segement, "ffmpeg_search_ast")
+
     print "all works done!"
 
 def wireshark_search_proc():
-    db1 = Graph("http://localhost:7476/db/data/")  #假设软件数据库开启在7475端口
-    db2 = Graph("http://localhost:7473/db/data/")  #假设代码段数据库开启在7476
-    suffix_tree_obj = suffixtree()
+    db1 = "http://127.0.0.1:7476/db/data/" #假设软件数据库开启在7475端口
+    db2 = "http://127.0.0.1:7473/db/data/"  #假设代码段数据库开启在7476
     
-    workbook = Workbook()
-    worksheet = workbook.active
-    worksheet.title = u"wireshark代码段查找测试结果"
-    header = [u'代码段', u"漏洞文件", u"漏洞函数", "distinct_type_and_const" , "distinct_const_no_type",
-              "distinct_type_no_const", "no_type_no_const", u"耗时"]
-    worksheet.append(header)
-    workbook.save("wireshark_search.xlsx")
+    pool = Pool(processes=5)
     
     #假设只测试一个代码段函数
     segement_funcs = ["CVE-2013-4933_VULN_COMPLETE_0",]
     funcs = get_all_functions(db1)
     
-    for func_name in segement_funcs:
-        try:
-            func_similarity_segement_level(db1, funcs, db2, func_name, suffix_tree_obj, worksheet)
-            workbook.save("wireshark_search.xlsx")
-        except:
-            print "error occured!"
+    count = len(funcs) / 5
+    for segement in segement_funcs:
+        pool.apply(func_similarity_segement_level, 
+                   args=(db1, funcs[0:count], db2, segement, "wireahrk_search_ast"))
+        pool.apply(func_similarity_segement_level, 
+                   args=(db1, funcs[count:count*2], db2, segement, "wireshark_search_ast"))
+        pool.apply(func_similarity_segement_level, 
+                   args=(db1, funcs[count*2:count*3], db2, segement, "wireshark_search_ast"))
+        pool.apply(func_similarity_segement_level, 
+                   args=(db1, funcs[count*3:count*4], db2, segement, "wireshark_search_ast"))
+        pool.apply(func_similarity_segement_level, 
+                   args=(db1, funcs[count*4:], db2, segement, "wireshark_search_ast"))
     
+    pool.join()
     print "all works done!"
     
 if __name__ == "__main__":

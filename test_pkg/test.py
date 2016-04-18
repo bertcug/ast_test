@@ -1,4 +1,4 @@
-#coding=utf-8
+# coding=utf-8
 '''
 Created on 2016年3月28日
 
@@ -6,6 +6,7 @@ Created on 2016年3月28日
 '''
 import sys
 sys.path.append("..")
+import traceback
 import datetime
 import re
 from algorithm.ast import serializedAST, get_function_ast_root,get_function_node_by_ast_root
@@ -166,6 +167,57 @@ def linux_diff():
     suffix_obj.close()
     print "linux all works done"
 
+def lose_test():
+    data = load_workbook("lose.xlsx", read_only=True)
+    suffix_obj = suffixtree()
+    
+    wb = Workbook()
+    
+    db1 = Graph("http://127.0.0.1:7473/db/data/")
+    db2 = graph()
+    
+    #ffmpeg
+    ffmpeg = wb.create_sheet("ffmpeg", 0)
+    for row in data['ffmpeg'].rows:
+        vuln_seg = row[0].value
+        patched_name = vuln_seg[:14] + "PATCHED_" + row[2].value
+        
+        try:
+            search_vuln_seg_in_patched(db1, vuln_seg, row[2].value, db2, patched_name,
+                                         suffix_obj, ffmpeg)
+            wb.save("lose_test.xlsx")
+        except Exception, e:
+            print e
+            traceback.print_exc()
+    
+    wireshark = wb.create_sheet("wireshark", 1)
+    for row in data['wireshark'].rows:
+        vuln_seg = row[0].value
+        patched_name = vuln_seg[:14] + "PATCHED_" + row[2].value
+        
+        try:
+            search_vuln_seg_in_patched(db1, vuln_seg, row[2].value, db1, patched_name,
+                                         suffix_obj, wireshark)
+            wb.save("lose_test.xlsx")
+        except Exception, e:
+            print e
+            traceback.print_exc()
+
+    linux = wb.create_sheet("linux", 0)
+    for row in data['linux'].rows:
+        vuln_seg = row[0].value
+        patched_name = vuln_seg[:14] + "PATCHED_" + row[2].value
+        
+        try:
+            search_vuln_seg_in_patched(db1, vuln_seg, row[2].value, db1, patched_name,
+                                         suffix_obj, linux)
+            wb.save("lose_test.xlsx")
+        except Exception, e:
+            print e
+            traceback.print_exc()
+
+    suffix_obj.close()
+
 def get_segements(segements, patch_func_name):
     cveid = patch_func_name[0:13]
     ret = []
@@ -221,6 +273,8 @@ if __name__ == "__main__":
         code_reuse()
     elif arg == "linux":
         linux_diff()
+    elif arg == "lose":
+        lose_test()
     else:
         print "argument error"
     
