@@ -12,7 +12,7 @@ if __name__ == "__main__":
     args = parse.parse_args()
     
     func = args.func
-    db = Graph("http://127.0.0.1:7473")
+    db = Graph("http://127.0.0.1:7473/db/data/")
     
     ast_root = get_function_ast_root(db, func)
     ser = serializedAST(db)
