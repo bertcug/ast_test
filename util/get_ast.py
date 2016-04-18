@@ -9,7 +9,7 @@ import argparse
 if __name__ == "__main__":
     parse = argparse.ArgumentParser()
     parse.add_argument("-f", "--func", help="function name")
-    parse.add_argument("-p", "--port", help="db port")
+    parse.add_argument("-p", "--port", type=int, help="db port")
     args = parse.parse_args()
     
     func = args.func
