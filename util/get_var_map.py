@@ -1,4 +1,4 @@
-#coding=utf-8
+# coding=utf-8
 '''
 Created on 2016年4月1日
 
@@ -9,7 +9,6 @@ sys.path.append("..")
 
 from db.models import get_connection
 from db.models import vulnerability_info, softwares, cve_infos
-from openpyxl import Workbook
 from segement_comp import get_type_mapping_table
 from py2neo import Graph
 import sqlite3
@@ -27,8 +26,6 @@ def get_var_mapping(soft_name):
     rets = cur.fetchall()
     
     neo4j_db = Graph()
-    wb = Workbook()
-    ws = wb.active
     
     infos = []
     for ret in rets:
@@ -43,9 +40,16 @@ def get_var_mapping(soft_name):
     var_map_db.commit()
     
     for info in infos:
+        
         vuln_info = vulnerability_info(info)
         cve_info = vuln_info.get_cve_info(db_conn)
         vuln_name = cve_info.cveid.replace("-", "_").upper() + "_VULN_" + vuln_info.vuln_func
+        
+        #check if exist
+        ret = var_map_db.execute("select * from %s where func_name='%s'" % (soft_name, vuln_name))
+        if ret:
+            continue
+        
         var_map = get_type_mapping_table(neo4j_db, vuln_name)
         var_map_db.execute('insert into %s values("%s", "%s")' % (soft_name, vuln_name, var_map.__str__()))
         var_map_db.commit()
