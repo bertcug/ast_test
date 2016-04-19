@@ -39,7 +39,7 @@ def get_var_mapping(soft_name):
     var_map_db = sqlite3.connect("var_map.db")
     var_map_db.execute('''create table %s(
             func_name CHAR(100) PRIMARY KEY,
-            var_map TEXT NOT NULL,)''' % soft_name)
+            var_map TEXT NOT NULL)''' % soft_name)
     var_map_db.commit()
     
     for info in infos:
