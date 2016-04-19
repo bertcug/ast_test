@@ -47,7 +47,7 @@ def get_var_mapping(soft_name):
         cve_info = vuln_info.get_cve_info(db_conn)
         vuln_name = cve_info.cveid.replace("-", "_").upper() + "_VULN_" + vuln_info.vuln_func
         var_map = get_type_mapping_table(neo4j_db, vuln_name)
-        var_map_db.execute('insert into %s values(%s, %s)' % (soft_name, vuln_name, var_map.__str__()))
+        var_map_db.execute('insert into %s values("%s", "%s")' % (soft_name, vuln_name, var_map.__str__()))
         var_map_db.commit()
         
     print "done!"
