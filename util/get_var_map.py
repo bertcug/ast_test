@@ -39,6 +39,7 @@ def get_var_mapping(soft_name):
             var_map TEXT NOT NULL)''' % soft_name)
     var_map_db.commit()
     
+    print "There are %d functions" % len(infos)
     for info in infos:
         
         vuln_info = vulnerability_info(info)

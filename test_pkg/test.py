@@ -100,7 +100,7 @@ def search_vuln_seg_in_patched(db1, vuln_seg, vuln_func, db2, patched_name, suff
                        report['no_type_no_const']) )
     
 def wireshark_diff():
-    data = load_workbook("Wireshark.xlsx", read_only=True)[u'Sheet3']
+    data = load_workbook("/home/bert/Documents/data/wireshark.xlsx", read_only=True)[u'Sheet3']
     suffix_obj = suffixtree()
     
     wb = Workbook()
@@ -120,13 +120,13 @@ def wireshark_diff():
             print e
             ws.append((vuln_seg, patched_name, "failed"))
         
-        wb.save("wireshark_diff.xlsx")
+        wb.save("/home/bert/Documents/data/wireshark_diff.xlsx")
         
     suffix_obj.close()
     print "wireshark all works done"
     
 def ffmpeg_diff():
-    data = load_workbook("ffmpeg.xlsx", read_only=True)[u'Sheet3']
+    data = load_workbook("/home/bert/Documents/data/ffmpeg.xlsx", read_only=True)[u'Sheet3']
     suffix_obj = suffixtree()
     
     wb = Workbook()
@@ -141,7 +141,7 @@ def ffmpeg_diff():
         
         try:
             search_vuln_seg_in_patched(db1, vuln_seg, row[2].value, db2, patched_name, suffix_obj, ws)
-            wb.save("ffmpeg_diff.xlsx")
+            wb.save("/home/bert/Documents/data/ffmpeg_diff.xlsx")
         except Exception as e:
             print e
     
@@ -149,7 +149,7 @@ def ffmpeg_diff():
     print "ffmpeg all works done"
     
 def linux_diff():
-    data = load_workbook("linux.xlsx", read_only=True)[u'Sheet3']
+    data = load_workbook("/home/bert/Documents/data/linux.xlsx", read_only=True)[u'Sheet3']
     suffix_obj = suffixtree()
     
     wb = Workbook()
@@ -164,7 +164,7 @@ def linux_diff():
         
         try:
             search_vuln_seg_in_patched(db1, vuln_seg, row[2].value, db2, patched_name, suffix_obj, ws)
-            wb.save("linux_diff.xlsx")
+            wb.save("/home/bert/Documents/data/linux_diff.xlsx")
         except Exception as e:
             print e
     
@@ -172,7 +172,7 @@ def linux_diff():
     print "linux all works done"
 
 def lose_test():
-    data = load_workbook("lose.xlsx", read_only=True)
+    data = load_workbook("/home/bert/Documents/data/lose.xlsx", read_only=True)
     suffix_obj = suffixtree()
     
     wb = Workbook()
@@ -215,7 +215,7 @@ def lose_test():
         try:
             search_vuln_seg_in_patched(db1, vuln_seg, row[2].value, db1, patched_name,
                                          suffix_obj, linux)
-            wb.save("lose_test.xlsx")
+            wb.save("/home/bert/Documents/data/lose_test.xlsx")
         except Exception, e:
             print e
             traceback.print_exc()
@@ -231,7 +231,7 @@ def get_segements(segements, patch_func_name):
     return ret    
 
 def code_reuse():
-    wb = load_workbook("data.xlsx")
+    wb = load_workbook("/home/bert/Documents/data/data.xlsx")
     
     wireshark_segement_list = []
     for row in wb['wireshark'].rows:
@@ -261,7 +261,7 @@ def code_reuse():
         for test in test_list:
             try:
                 search_vuln_seg_in_patched(db, test[0], test[1], db, row[0].value, suffix_obj, ws)
-                result.save("code_reuse.xlsx")
+                result.save("/home/bert/Documents/data/code_reuse.xlsx")
             except Exception as e:
                 print e  
     suffix_obj.close()

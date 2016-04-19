@@ -1,4 +1,4 @@
-#coding=utf-8
+# coding=utf-8
 '''
 Created on 2016年3月31日
 @author: Bert
@@ -14,7 +14,7 @@ if __name__ == "__main__":
     
     db = Graph("http://127.0.0.1:7476/db/data/")
     #wireshark diff
-    ws1 = load_workbook("Wireshark.xlsx")['Sheet3']
+    ws1 = load_workbook("/home/bert/Documents/data/wireshark.xlsx")['Sheet3']
     for row in ws1.rows:
         try:
             n = get_function_node(db, row[0].value)
@@ -32,7 +32,7 @@ if __name__ == "__main__":
             print "%s not found" % row[1].value
     
     #ffmpeg diff
-    ws2= load_workbook("ffmpeg.xlsx")['Sheet3']
+    ws2= load_workbook("/home/bert/Documents/data/ffmpeg.xlsx")['Sheet3']
     for row in ws2.rows:
         try:
             n = get_function_node(db, row[0].value)
@@ -50,7 +50,7 @@ if __name__ == "__main__":
             print "%s not found" % row[1].value
     
     # code reuse
-    wb = load_workbook("data.xlsx")
+    wb = load_workbook("/home/bert/Documents/data/data.xlsx")
     ws3 = wb['Sheet1']
     for row in ws3.rows:
         try:

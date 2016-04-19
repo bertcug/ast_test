@@ -23,20 +23,20 @@ if __name__ == "__main__":
 	
 	ffmpeg = wb.create_sheet("ffmpeg", 0)
 	#get ffmpeg lose
-	ret =  get_lose("ffmpeg.xlsx", "ffmpeg_diff.xlsx")
+	ret =  get_lose("/home/bert/Documents/data/ffmpeg.xlsx", "/home/bert/Documents/data/ffmpeg_diff.xlsx")
 	for r in ret:
 		ffmpeg.append(r)
 
 	wireshark = wb.create_sheet("wireshark", 1)
 	#get wiresgark lose
-	ret = get_lose("wireshark.xlsx", "wireshark_diff.xlsx")
+	ret = get_lose("/home/bert/Documents/data/wireshark.xlsx", "/home/bert/Documents/data/wireshark_diff.xlsx")
 	for r in ret:
 		wireshark.append(r)
 
 	linux = wb.create_sheet("linux", 2)	
 	#get linux lose
-	ret = get_lose("linux.xlsx", "linux_diff.xlsx")
+	ret = get_lose("/home/bert/Documents/data/linux.xlsx", "/home/bert/Documents/data/linux_diff.xlsx")
 	for r in ret:
 		linux.append(r)
 
-	wb.save("lose.xlsx")
+	wb.save("/home/bert/Documents/data/lose.xlsx")
