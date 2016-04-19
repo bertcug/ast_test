@@ -12,7 +12,5 @@ def get_type_mapping_table(neo4j_db, func_name):
         return {'other':'v'}
     else:
         ser = serializedAST(neo4j_db)
-        if ser.variable_maps != {'other':'v'}:
-            print "error"
         ser.genSerilizedAST(ast_root)
         return ser.variable_maps

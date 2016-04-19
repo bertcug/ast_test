@@ -48,7 +48,7 @@ def get_var_mapping(soft_name):
         
         #check if exist
         ret = var_map_db.execute("select * from %s where func_name='%s'" % (soft_name, vuln_name))
-        if ret:
+        if ret.fetchone():
             continue
         
         var_map = get_type_mapping_table(neo4j_db, vuln_name)

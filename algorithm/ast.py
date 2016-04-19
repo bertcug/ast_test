@@ -122,18 +122,14 @@ def get_function_node_by_ast_root(neo4jdb, ast_root):
     return ret
 
 class serializedAST:
-    
-    variable_maps = {'other':'v'}  # 变量与类型映射表
-    neo4jdb = None
-    data_type_mapping = True
-    const_mapping = True
-     
+       
     def __init__(self, neo4jdb, data_type_mapping=True, const_mapping=True):
         # @data_type_mapping: True:相同类型变量映射成相同token， False：所有类型变量映射成相同token
         # @const_mapping: True:相同常亮映射到相同token，所有常量映射成相同token
         self.neo4jdb = neo4jdb
         self.data_type_mapping = data_type_mapping
         self.const_mapping = const_mapping
+        self.variable_maps = {'other':'v'}  # 变量与类型映射表
         
     def getParent(self, node):
         return get_in_node(self.neo4jdb, node, edge_property='IS_AST_PARENT')
