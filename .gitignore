@@ -107,3 +107,6 @@ $RECYCLE.BIN/
 
 # Windows shortcuts
 *.lnk
+
+.project
+.settings/org.eclipse.core.resources.prefs
