@@ -217,14 +217,14 @@ class serializedAST:
             # 处理子节点
             for r in res:  # 认为子节点按照childrenNum排序
                 
-                if(r.properties['type'] == "ReturnType"):
+                if r.properties['type'] == "ReturnType":
                     continue
                 
-                if(r.properties['type'] == "ParameterList"):
+                elif r.properties['type'] == "ParameterList":
                     self.parseParamListNode(r)
                     continue
                 
-                if(r.properties['type'] == "IdentifierDecl"):
+                elif r.properties['type'] == "IdentifierDecl":
                     self.parseIdentifierDeclNode(r)
                     
                 ret = self.genSerilizedAST(r)  # 递归调用
@@ -252,15 +252,15 @@ class serializedAST:
             num = 0
             t = root.properties['type']
             
-            if(t == 'IncDec'):
+            if t == 'IncDec':
                 s_ast = root.properties['code'] + "(%d)" % num + ";"
                 return [s_ast, num]
         
-            if (t == 'CastTarget' or t == 'UnaryOperator'):
+            elif t == 'CastTarget' or t == 'UnaryOperator':
                 s_ast = root.properties['code'] + "(%d)" % num + ";"
                 return [s_ast, num]
             
-            if (t == 'SizeofOperand'):
+            elif t == 'SizeofOperand':
                 code = root.properties['code']
                 var_type = ""
                 
@@ -275,10 +275,10 @@ class serializedAST:
                 
                 return [s_ast, num]
             
-            if(t == 'Identifier'):
+            elif t == 'Identifier':
                 return self.parseIndentifierNode(root)
             
-            if(t == 'PrimaryExpression'):
+            elif(t == 'PrimaryExpression'):
                 return self.parsePrimaryExprNode(root)
                                
             else:
