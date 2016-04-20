@@ -141,9 +141,11 @@ def ffmpeg_diff():
         
         try:
             search_vuln_seg_in_patched(db1, vuln_seg, row[2].value, db2, patched_name, suffix_obj, ws)
-            wb.save("/home/bert/Documents/data/ffmpeg_diff.xlsx")
+            
         except Exception as e:
             print e
+            ws.append((vuln_seg, patched_name, "failed"))
+        wb.save("/home/bert/Documents/data/ffmpeg_diff.xlsx")
     
     suffix_obj.close()
     print "ffmpeg all works done"
@@ -164,9 +166,11 @@ def linux_diff():
         
         try:
             search_vuln_seg_in_patched(db1, vuln_seg, row[2].value, db2, patched_name, suffix_obj, ws)
-            wb.save("/home/bert/Documents/data/linux_diff.xlsx")
+            
         except Exception as e:
             print e
+            ws.append((vuln_seg, patched_name, "failed"))
+        wb.save("/home/bert/Documents/data/linux_diff.xlsx")
     
     suffix_obj.close()
     print "linux all works done"
