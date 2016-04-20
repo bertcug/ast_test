@@ -95,7 +95,7 @@ def ffmpeg_search_proc():
     wb = Workbook()
     ws = wb.active
     for segement in segement_funcs:
-        func_similarity_segement_level(db1, funcs, db2, segement)
+        func_similarity_segement_level(db1, funcs, db2, segement,ws)
         wb.save("/home/bert/Documents/data/ffmpeg_search.xlsx")
 
     print "all works done!"
@@ -112,7 +112,7 @@ def wireshark_search_proc():
     wb = Workbook()
     ws = wb.active
     for segement in segement_funcs:
-        func_similarity_segement_level(db1, funcs, db2, segement)
+        func_similarity_segement_level(db1, funcs, db2, segement,ws)
 
         wb.save("/home/bert/Documents/data/wireshark_search.xlsx")
     
