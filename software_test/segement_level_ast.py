@@ -88,7 +88,7 @@ def ffmpeg_search_proc():
     
     neo4j_db = Graph(db1)
     #假设只测试一个代码段函数
-    segement_funcs = ["CVE-2013-0861_VULN_COMPLETE_0",]
+    segement_funcs = ["CVE_2013_0861_VULN_COMPLETE_0",]
     funcs = get_all_functions(neo4j_db)
     print "get all functions OK"
     
@@ -107,7 +107,7 @@ def wireshark_search_proc():
     db2 = "http://127.0.0.1:7473/db/data/"  #假设代码段数据库开启在7476
     
     #假设只测试一个代码段函数
-    segement_funcs = ["CVE-2013-4933_VULN_COMPLETE_0",]
+    segement_funcs = ["CVE_2013_4933_VULN_COMPLETE_0",]
     funcs = get_all_functions(Graph(db1))
     print "get all functions OK"
     
