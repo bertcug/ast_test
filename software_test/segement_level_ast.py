@@ -40,7 +40,10 @@ def func_similarity_segement_level(db1, funcs, db2, func_name):
     pattern4 = re.sub(prefix_str, "", pattern4)
     
     for func in funcs:
- 
+        print "[%s] processing %s VS %s" % (
+                                   datetime.datetime.now().strftime("%y-%m-%d %H:%M:%S"),
+                                   func.properties[u'name'], func_name)
+        
         ast_root = get_function_ast_root(neo4j_db1, func)
         if ast_root is None:
             continue
