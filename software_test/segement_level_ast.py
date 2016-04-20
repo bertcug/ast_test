@@ -7,9 +7,6 @@ import datetime
 import re
 from py2neo import Graph
 from openpyxl import Workbook
-import MySQLdb
-from multiprocessing import Pool, Process
-
 from algorithm.ast import get_function_ast_root
 from algorithm.ast import get_all_functions, get_function_node
 from algorithm.ast import serializedAST
@@ -31,10 +28,10 @@ def func_similarity_segement_level(db1, funcs, db2, func_name):
         print "%s is not found" % func_name
         return
      
-    pattern1 = serializedAST(db2, True, True).genSerilizedAST(target_func)[0][:-1]
-    pattern2 = serializedAST(db2, False, True).genSerilizedAST(target_func)[0][:-1]  # 所有类型变量映射成相同值
-    pattern3 = serializedAST(db2, True, False).genSerilizedAST(target_func)[0][:-1]
-    pattern4 = serializedAST(db2, False, False).genSerilizedAST(target_func)[0][:-1]
+    pattern1 = serializedAST(neo4j_db2, True, True).genSerilizedAST(target_func)[0][:-1]
+    pattern2 = serializedAST(neo4j_db2, False, True).genSerilizedAST(target_func)[0][:-1]  # 所有类型变量映射成相同值
+    pattern3 = serializedAST(neo4j_db2, True, False).genSerilizedAST(target_func)[0][:-1]
+    pattern4 = serializedAST(neo4j_db2, False, False).genSerilizedAST(target_func)[0][:-1]
     
     prefix_str = r"^FunctionDef\([0-9]+\);CompoundStatement\([0-9]+\);"
     pattern1 = re.sub(prefix_str, "", pattern1)
@@ -48,10 +45,10 @@ def func_similarity_segement_level(db1, funcs, db2, func_name):
         if ast_root is None:
             continue
         
-        s1 = serializedAST(db1, True, True).genSerilizedAST(ast_root)[0][:-1]
-        s2 = serializedAST(db1, False, True).genSerilizedAST(ast_root)[0][:-1]
-        s3 = serializedAST(db1, True, False).genSerilizedAST(ast_root)[0][:-1]
-        s4 = serializedAST(db1, False, False).genSerilizedAST(ast_root)[0][:-1] 
+        s1 = serializedAST(neo4j_db1, True, True).genSerilizedAST(ast_root)[0][:-1]
+        s2 = serializedAST(neo4j_db1, False, True).genSerilizedAST(ast_root)[0][:-1]
+        s3 = serializedAST(neo4j_db1, True, False).genSerilizedAST(ast_root)[0][:-1]
+        s4 = serializedAST(neo4j_db1, False, False).genSerilizedAST(ast_root)[0][:-1] 
         
         f = get_function_file(neo4j_db1, func)[21:]
         
