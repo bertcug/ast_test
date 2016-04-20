@@ -76,11 +76,11 @@ def func_similarity_segement_level(db1, funcs, db2, func_name, ws):
         else:
             report['distinct_type_no_const'] = 0
         
-        ws.append(func_name, func.properties[u'name'], f, "success",
+        ws.append((func_name, func.properties[u'name'], f, "success",
                               report['distinct_type_and_const'],
                               report['distinct_const_no_type'],
                               report['distinct_type_no_const'],
-                              report['distinct_type_no_const'])
+                              report['distinct_type_no_const']))
               
 def ffmpeg_search_proc():
     db1 = "http://127.0.0.1:7475/db/data/" #假设软件数据库开启在7475端口
