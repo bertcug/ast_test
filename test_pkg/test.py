@@ -43,7 +43,7 @@ def search_vuln_seg_in_patched(db1, vuln_seg, vuln_func, db2, patched_name, suff
     o3 = serializedAST(db1, True, False)
     o4 = serializedAST(db1, False, False)
     
-    vuln_name = vuln_seg[:14] + "_VULN_" + vuln_func
+    vuln_name = vuln_seg[:14] + "VULN_" + vuln_func
     type_mapping = get_type_mapping_table(db2, vuln_name)
     
     o1.variable_maps = type_mapping
