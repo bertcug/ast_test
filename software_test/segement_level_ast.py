@@ -14,7 +14,7 @@ from algorithm.ast import get_function_file
 from algorithm.suffixtree import suffixtree
 
 
-def func_similarity_segement_level(db1, funcs, db2, func_name):
+def func_similarity_segement_level(db1, funcs, db2, func_name, ws):
     # @db1 待比对数据库
     # @db2 代码段数据库
     # @func_name 代码段构成的函数名
@@ -76,7 +76,7 @@ def func_similarity_segement_level(db1, funcs, db2, func_name):
         else:
             report['distinct_type_no_const'] = 0
         
-        return (func_name, func.properties[u'name'], f, "success",
+        ws.append(func_name, func.properties[u'name'], f, "success",
                               report['distinct_type_and_const'],
                               report['distinct_const_no_type'],
                               report['distinct_type_no_const'],
@@ -95,10 +95,8 @@ def ffmpeg_search_proc():
     wb = Workbook()
     ws = wb.active
     for segement in segement_funcs:
-        ret = func_similarity_segement_level(db1, funcs, db2, segement)
-        if ret[4] or ret[5] or ret[6] or ret[7]:
-            ws.append(ret)
-            wb.save("ffmpeg_search.xlsx")
+        func_similarity_segement_level(db1, funcs, db2, segement)
+        wb.save("/home/bert/Documents/data/ffmpeg_search.xlsx")
 
     print "all works done!"
 
@@ -114,10 +112,9 @@ def wireshark_search_proc():
     wb = Workbook()
     ws = wb.active
     for segement in segement_funcs:
-        ret = func_similarity_segement_level(db1, funcs, db2, segement)
-        if ret[4] or ret[5] or ret[6] or ret[7]:
-            ws.append(ret)
-            wb.save("wireshark_search.xlsx")
+        func_similarity_segement_level(db1, funcs, db2, segement)
+
+        wb.save("/home/bert/Documents/data/wireshark_search.xlsx")
     
     print "all works done!"
     
