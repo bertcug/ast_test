@@ -16,7 +16,7 @@ def get_function_ast_root(neo4j_db, name_or_node):
         records = neo4j_db.cypher.execute(query)
         return records.one
     else:
-        query = "start n=node(%d) (n)-[:`IS_FUNCTION_OF_AST`]->(m) return m" % name_or_node._id
+        query = "start n=node(%d) match (n)-[:`IS_FUNCTION_OF_AST`]->(m) return m" % name_or_node._id
         records = neo4j_db.cypher.execute(query)
         return records.one
 
@@ -29,7 +29,7 @@ def get_function_file(neo4j_db, name_or_node):
         else:
             return None
     else:
-        query = "start n=node(%d) (n)<-[:`IS_FILE_OF`]-(m) return m" % name_or_node._id
+        query = "start n=node(%d) match (n)<-[:`IS_FILE_OF`]-(m) return m" % name_or_node._id
         records = neo4j_db.cypher.execute(query)
         if records:
             return records.one.properties['filepath']
