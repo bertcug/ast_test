@@ -16,11 +16,11 @@ from algorithm.suffixtree import suffixtree
 from py2neo import Graph
 from segement_comp import get_type_mapping_table
 
-def search_vuln_seg_in_patched(db1, vuln_seg, vuln_func, db2, patched_name, suffix_obj, worksheet):
+def search_vuln_seg_in_func(db1, vuln_seg, vuln_func, var_map, db2, func_name, suffix_obj):
     
     print "[%s] processing %s VS %s" % (
                                    datetime.datetime.now().strftime("%y-%m-%d %H:%M:%S"),
-                                   vuln_seg, patched_name)
+                                   vuln_seg, func_name)
     
     
     vuln_seg_func = get_function_ast_root(db1, vuln_seg)
@@ -29,22 +29,19 @@ def search_vuln_seg_in_patched(db1, vuln_seg, vuln_func, db2, patched_name, suff
         
     if vuln_seg_func is None:
         print "%s  %s not found" % (vuln_seg, vuln_func)
-        worksheet.append( (vuln_seg+"-"+vuln_func, patched_name, "vuln_not_found","-", "-","-", "-","-","-") )
-        return
+        return (vuln_seg+"-"+vuln_func, func_name, "vuln_not_found","-", "-","-", "-","-","-")
     
-    patched_func = get_function_ast_root(db2, patched_name)
+    patched_func = get_function_ast_root(db2, func_name)
     if patched_func is None:
-        print "%s is not found" % patched_name
-        worksheet.append( (vuln_seg, patched_name, "patch_not_found","-", "-", "-", "-","-","-") )
-        return
+        print "%s is not found" % func_name
+        return (vuln_seg, func_name, "patch_not_found","-", "-", "-", "-","-","-")
     
     o1 = serializedAST(db1, True, True)
     o2 = serializedAST(db1, False, True)
     o3 = serializedAST(db1, True, False)
     o4 = serializedAST(db1, False, False)
     
-    vuln_name = vuln_seg[:14] + "VULN_" + vuln_func
-    type_mapping = get_type_mapping_table(db2, vuln_name)
+    type_mapping = var_map
     
     o1.variable_maps = type_mapping
     o2.variable_maps = type_mapping
@@ -95,9 +92,9 @@ def search_vuln_seg_in_patched(db1, vuln_seg, vuln_func, db2, patched_name, suff
 #     vuln_seg_root = get_function_node_by_ast_root(db1, vuln_seg_func)
 #     match, simi = func_cfg_similarity(patch_root, db2, vuln_seg_root, db1)
     
-    worksheet.append( (vuln_seg, patched_name, "success", report["distinct_type_and_const"],
+    return (vuln_seg, func_name, "success", report["distinct_type_and_const"],
                        report["distinct_const_no_type"], report["distinct_type_no_const"],
-                       report['no_type_no_const']) )
+                       report['no_type_no_const'])
     
 def wireshark_diff():
     data = load_workbook("/home/bert/Documents/data/wireshark.xlsx", read_only=True)[u'Sheet3']
@@ -112,10 +109,12 @@ def wireshark_diff():
     for row in data.rows:
         vuln_seg = row[0].value
         patched_name = vuln_seg[:14] + "PATCHED_" + row[2].value
-        
+        vuln_name = vuln_seg[:14] + "VULN_" + row[2].value
+        var_map = get_type_mapping_table(db2, vuln_name)
         try:
-            search_vuln_seg_in_patched(db1, vuln_seg, row[2].value, db2, patched_name, suffix_obj, ws)
             
+            ret = search_vuln_seg_in_func(db1, vuln_seg, row[2].value,var_map, db2, patched_name, suffix_obj)
+            ws.append(ret)
         except Exception as e:
             print e
             ws.append((vuln_seg, patched_name, "failed"))
@@ -138,9 +137,11 @@ def ffmpeg_diff():
     for row in data.rows:
         vuln_seg = row[0].value
         patched_name = vuln_seg[:14] + "PATCHED_" + row[2].value
-        
+        vuln_name = vuln_seg[:14] + "VULN_" + row[2].value
+        var_map = get_type_mapping_table(db2, vuln_name)
         try:
-            search_vuln_seg_in_patched(db1, vuln_seg, row[2].value, db2, patched_name, suffix_obj, ws)
+            ret = search_vuln_seg_in_func(db1, vuln_seg, row[2].value, var_map, db2, patched_name, suffix_obj)
+            ws.append(ret)
             
         except Exception as e:
             print e
@@ -163,10 +164,11 @@ def linux_diff():
     for row in data.rows:
         vuln_seg = row[0].value
         patched_name = vuln_seg[:14] + "PATCHED_" + row[2].value
-        
+        vuln_name = vuln_seg[:14] + "VULN_" + row[2].value
+        var_map = get_type_mapping_table(db2, vuln_name)
         try:
-            search_vuln_seg_in_patched(db1, vuln_seg, row[2].value, db2, patched_name, suffix_obj, ws)
-            
+            ret = search_vuln_seg_in_func(db1, vuln_seg, row[2].value, var_map, db2, patched_name, suffix_obj, ws)
+            ws.append(ret)
         except Exception as e:
             print e
             ws.append((vuln_seg, patched_name, "failed"))
@@ -189,10 +191,13 @@ def lose_test():
     for row in data['ffmpeg'].rows:
         vuln_seg = row[0].value
         patched_name = vuln_seg[:14] + "PATCHED_" + row[2].value
+        vuln_name = vuln_seg[:14] + "VULN_" + row[2].value
+        var_map = get_type_mapping_table(db2, vuln_name)
         
         try:
-            search_vuln_seg_in_patched(db1, vuln_seg, row[2].value, db2, patched_name,
-                                         suffix_obj, ffmpeg)
+            ret = search_vuln_seg_in_func(db1, vuln_seg, row[2].value, var_map, db2, patched_name,
+                                         suffix_obj)
+            ffmpeg.append(ret)
             wb.save("lose_test.xlsx")
         except Exception, e:
             print e
@@ -202,10 +207,12 @@ def lose_test():
     for row in data['wireshark'].rows:
         vuln_seg = row[0].value
         patched_name = vuln_seg[:14] + "PATCHED_" + row[2].value
-        
+        vuln_name = vuln_seg[:14] + "VULN_" + row[2].value
+        var_map = get_type_mapping_table(db2, vuln_name)
         try:
-            search_vuln_seg_in_patched(db1, vuln_seg, row[2].value, db1, patched_name,
-                                         suffix_obj, wireshark)
+            ret = search_vuln_seg_in_func(db1, vuln_seg, row[2].value, var_map, db1, patched_name,
+                                         suffix_obj)
+            wireshark.append(ret)
             wb.save("lose_test.xlsx")
         except Exception, e:
             print e
@@ -215,10 +222,12 @@ def lose_test():
     for row in data['linux'].rows:
         vuln_seg = row[0].value
         patched_name = vuln_seg[:14] + "PATCHED_" + row[2].value
-        
+        vuln_name = vuln_seg[:14] + "VULN_" + row[2].value
+        var_map = get_type_mapping_table(db2, vuln_name)
         try:
-            search_vuln_seg_in_patched(db1, vuln_seg, row[2].value, db1, patched_name,
-                                         suffix_obj, linux)
+            ret = search_vuln_seg_in_func(db1, vuln_seg, row[2].value, var_map, db1, patched_name,
+                                         suffix_obj)
+            linux.append(ret)
             wb.save("/home/bert/Documents/data/lose_test.xlsx")
         except Exception, e:
             print e
@@ -253,7 +262,9 @@ def code_reuse():
         test_list = get_segements(wireshark_segement_list, row[0].value)
         for test in test_list:
             try:
-                search_vuln_seg_in_patched(db, test[0], test[1], db, row[0].value, suffix_obj, ws)
+                var_map = get_type_mapping_table(db, row[0].value)
+                ret = search_vuln_seg_in_func(db, test[0], test[1], var_map, db, row[0].value, suffix_obj)
+                ws.append(ret)
                 result.save("code_reuse.xlsx")
             except Exception as e:
                 print e
@@ -264,7 +275,9 @@ def code_reuse():
         test_list = get_segements(ffmpeg_segement_list, row[0].value)
         for test in test_list:
             try:
-                search_vuln_seg_in_patched(db, test[0], test[1], db, row[0].value, suffix_obj, ws)
+                var_map = get_type_mapping_table(db, row[0].value)
+                ret = search_vuln_seg_in_func(db, test[0], test[1], var_map, db, row[0].value, suffix_obj)
+                ws.append(ret)
                 result.save("/home/bert/Documents/data/code_reuse.xlsx")
             except Exception as e:
                 print e  
