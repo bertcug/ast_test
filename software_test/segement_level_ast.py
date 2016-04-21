@@ -74,20 +74,23 @@ def func_similarity_segement_level(db1, funcs, db2, func_name, ws):
                 report['distinct_type_no_const'] = False
             
             if suffix_tree_obj.search(s4, pattern4):
-                report['distinct_type_no_const'] = True
+                report['no_type_no_const'] = True
             else:
-                report['distinct_type_no_const'] = False
+                report['no_type_no_const'] = False
                 
-            ws.append((func_name, func.properties[u'name'], f, "success",
+            if report['distinct_type_and_const'] or report['distinct_type_no_const']\
+                or report['distinct_const_no_type'] or report['no_type_no_const']:
+                ws.append((func_name, func.properties[u'name'], f, "success",
                               report['distinct_type_and_const'],
                               report['distinct_const_no_type'],
                               report['distinct_type_no_const'],
-                              report['distinct_type_no_const']))
+                              report['no_type_no_const']))
         except Exception,e:
             log_file = open("suffix_tree_error.log","a")
             log_file.writelines(
                                 [datetime.datetime.now().strftime("%y-%m-%d %H:%M:%S") + " " + e,
                                  s1, pattern1])
+            log_file.flush()
             ws.append((func_name, func.properties[u'name'], f, "suffix_tree_error"))
             
         
