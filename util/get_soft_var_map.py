@@ -36,11 +36,14 @@ def get_software_var_map(soft, port):
         ser.genSerilizedAST(ast_root)
         var_map = ser.variable_maps
         
-        
-        sql_db.execute("insert into %s values(%d, %s, %s, %s)" %(soft, func._id,
-                                                                 func.properties[u'name'],
-                                                                 func_file, var_map.__str__()))
-        sql_db.commit()
+        query = "insert into %s values(%d, %s, %s, %s)" %(soft, func._id,
+            func.properties[u'name'],func_file, var_map.__str__())
+        try:
+            sql_db.execute(query)
+            sql_db.commit()
+        except Exception,e:
+            print "query sql is:", query
+            print e
     
     print "all works done!"
 
