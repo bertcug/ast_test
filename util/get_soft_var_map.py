@@ -20,7 +20,7 @@ def get_software_var_map(soft, port):
             func_id INT PRIMARY KEY,
             func_name CHAR(100) NOT NULL,
             file CHAR(200) NOT NULL,
-            var_map TEXT NOT NULL)''' % soft_name)
+            var_map TEXT NOT NULL)''' % soft)
     sql_db.commit()
     
     funcs = get_all_functions(neo4j_db)
