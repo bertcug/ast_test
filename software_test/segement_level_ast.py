@@ -54,34 +54,44 @@ def func_similarity_segement_level(db1, funcs, db2, func_name, ws):
         s3 = serializedAST(neo4j_db1, True, False).genSerilizedAST(ast_root)[0][:-1]
         s4 = serializedAST(neo4j_db1, False, False).genSerilizedAST(ast_root)[0][:-1] 
         
-        f = get_function_file(neo4j_db1, func)[21:]
+        f = get_function_file(neo4j_db1, func)
         
         report = {}
-        if suffix_tree_obj.search(s1, pattern1):
-            report['distinct_type_and_const'] = 1
-        else:
-            report['distinct_type_and_const'] = 0
-        
-        if suffix_tree_obj.search(s2, pattern2):
-            report['distinct_const_no_type'] = 1
-        else:
-            report['distinct_const_no_type'] = 0
-        
-        if suffix_tree_obj.search(s3, pattern3):
-            report['distinct_type_no_const'] = 1
-        else:
-            report['distinct_type_no_const'] = 0
-        
-        if suffix_tree_obj.search(s4, pattern4):
-            report['distinct_type_no_const'] = 1
-        else:
-            report['distinct_type_no_const'] = 0
-        
-        ws.append((func_name, func.properties[u'name'], f, "success",
+        try:
+            if suffix_tree_obj.search(s1, pattern1):
+                report['distinct_type_and_const'] = True
+            else:
+                report['distinct_type_and_const'] = False
+            
+            if suffix_tree_obj.search(s2, pattern2):
+                report['distinct_const_no_type'] = True
+            else:
+                report['distinct_const_no_type'] = False
+            
+            if suffix_tree_obj.search(s3, pattern3):
+                report['distinct_type_no_const'] = True
+            else:
+                report['distinct_type_no_const'] = False
+            
+            if suffix_tree_obj.search(s4, pattern4):
+                report['distinct_type_no_const'] = True
+            else:
+                report['distinct_type_no_const'] = False
+                
+            ws.append((func_name, func.properties[u'name'], f, "success",
                               report['distinct_type_and_const'],
                               report['distinct_const_no_type'],
                               report['distinct_type_no_const'],
                               report['distinct_type_no_const']))
+        except Exception,e:
+            log_file = open("suffix_tree_error.log","a")
+            log_file.writelines(
+                                [datetime.datetime.now().strftime("%y-%m-%d %H:%M:%S") + " " + e,
+                                 s1, pattern1])
+            ws.append((func_name, func.properties[u'name'], f, "suffix_tree_error"))
+            
+        
+        
               
 def ffmpeg_search_proc():
     db1 = "http://127.0.0.1:7475/db/data/" #假设软件数据库开启在7475端口
