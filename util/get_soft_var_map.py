@@ -48,7 +48,7 @@ if __name__ == "__main__":
     parse = argparse.ArgumentParser()
     
     parse.add_argument("soft", help="software")
-    parse.add_argument("port", help="neo4j port")
+    parse.add_argument("port", type=int, help="neo4j port")
     args = parse.parse_args()
     
     get_software_var_map(args.soft, args.port)
