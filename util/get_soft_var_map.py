@@ -11,6 +11,7 @@ from algorithm.ast import get_all_functions, get_function_ast_root, serializedAS
 from segement_comp import get_type_mapping_table
 from py2neo import Graph
 import sqlite3
+import argparse
 
 def get_software_var_map(soft, port):
     neo4j_db = Graph("http://127.0.0.1:%d/db/data/" % port)
@@ -42,4 +43,13 @@ def get_software_var_map(soft, port):
         sql_db.commit()
     
     print "all works done!"
+
+if __name__ == "__main__":
+    parse = argparse.ArgumentParser()
+    
+    parse.add_argument("soft", help="software")
+    parse.add_argument("port", help="neo4j port")
+    args = parse.parse_args()
+    
+    get_software_var_map(args.soft, args.port)
         
