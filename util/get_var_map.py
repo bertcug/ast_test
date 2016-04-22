@@ -51,25 +51,25 @@ def get_var_mapping(soft_name):
         patch_name = cve_info.cveid.replace("-", "_").upper() + "_PATCHED_" + vuln_info.vuln_func
         
         #check if exist
-        ret = var_map_db.execute("select * from %s where func_name='%s'" % (soft_name, vuln_name))
+        ret = var_map_db.execute("select * from %s where func_name=?" % soft_name, (vuln_name,))
         if not ret.fetchone():
             #VULN
             var_map = get_type_mapping_table(neo4j_db, vuln_name)
             try:
-                var_map_db.execute('insert into %s values("%s", "%s")' % 
-                               (soft_name, vuln_name, var_map.__str__()))
+                var_map_db.execute('insert into %s values(?, ?)' % soft_name,
+                                    (vuln_name, var_map.__str__()) )
                 var_map_db.commit()
             except Exception, e:
                 print soft_name, vuln_name
                 print "error:", e
         
-        ret = var_map_db.execute("select * from %s where func_name='%s'" % (soft_name, patch_name))
+        ret = var_map_db.execute("select * from %s where func_name=?" % soft_name,(patch_name,))
         if not ret.fetchone():
             #PATCH
             var_map = get_type_mapping_table(neo4j_db, patch_name)
             try:
-                var_map_db.execute('insert into %s values("%s", "%s")' % 
-                                   (soft_name, patch_name, var_map.__str__()))
+                var_map_db.execute('insert into %s values(?, ?)' % soft_name, 
+                                   (patch_name, var_map.__str__()))
                 var_map_db.commit()
             except Exception, e:
                 print soft_name, vuln_name
