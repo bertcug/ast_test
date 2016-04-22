@@ -44,22 +44,41 @@ def get_var_mapping(soft_name):
         
         vuln_info = vulnerability_info(info)
         cve_info = vuln_info.get_cve_info(db_conn)
+        if vuln_info.vuln_func == "None":
+            continue
+        
         vuln_name = cve_info.cveid.replace("-", "_").upper() + "_VULN_" + vuln_info.vuln_func
+        patch_name = cve_info.cveid.replace("-", "_").upper() + "_PATCHED_" + vuln_info.vuln_func
         
         #check if exist
         ret = var_map_db.execute("select * from %s where func_name='%s'" % (soft_name, vuln_name))
         if ret.fetchone():
             continue
         
+        #VULN
         var_map = get_type_mapping_table(neo4j_db, vuln_name)
         var_map_db.execute('insert into %s values("%s", "%s")' % (soft_name, vuln_name, var_map.__str__()))
+        
+        #PATCH
+        var_map = get_type_mapping_table(neo4j_db, patch_name)
+        var_map_db.execute('insert into %s values("%s", "%s")' % (soft_name, vuln_name, var_map.__str__()))
+        
         var_map_db.commit()
         
     print "done!"
 
 if __name__ == "__main__":
     parse = argparse.ArgumentParser()
-    parse.add_argument("software", help="software mame")
+    parse.add_argument("-soft","--software", help="software mame")
+    parse.add_argument("-all", help="create all softwares, now linux, wireshark, ffmpeg")
     args = parse.parse_args()
     
-    get_var_mapping(args.software)
+    if args.all:
+        get_var_mapping("linux")
+        get_var_mapping("ffmpeg")
+        get_var_mapping("wireshark")
+    elif args.software:
+        get_var_mapping(args.software)
+    else:
+        parse.print_help() 
+            
