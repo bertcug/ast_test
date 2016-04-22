@@ -58,10 +58,10 @@ def get_var_mapping(soft_name):
         #VULN
         var_map = get_type_mapping_table(neo4j_db, vuln_name)
         var_map_db.execute('insert into %s values("%s", "%s")' % (soft_name, vuln_name, var_map.__str__()))
-        
+
         #PATCH
         var_map = get_type_mapping_table(neo4j_db, patch_name)
-        var_map_db.execute('insert into %s values("%s", "%s")' % (soft_name, vuln_name, var_map.__str__()))
+        var_map_db.execute('insert into %s values("%s", "%s")' % (soft_name, patch_name, var_map.__str__()))
         
         var_map_db.commit()
         
