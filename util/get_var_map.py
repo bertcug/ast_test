@@ -70,7 +70,7 @@ def get_var_mapping(soft_name):
 if __name__ == "__main__":
     parse = argparse.ArgumentParser()
     parse.add_argument("-soft","--software", help="software mame")
-    parse.add_argument("-all", help="create all softwares, now linux, wireshark, ffmpeg")
+    parse.add_argument("-all", action="store_true", default=False, help="create all softwares, now linux, wireshark, ffmpeg")
     args = parse.parse_args()
     
     if args.all:
