@@ -52,18 +52,22 @@ def get_var_mapping(soft_name):
         
         #check if exist
         ret = var_map_db.execute("select * from %s where func_name='%s'" % (soft_name, vuln_name))
-        if ret.fetchone():
-            continue
+        if not ret.fetchone():
+            #VULN
+            var_map = get_type_mapping_table(neo4j_db, vuln_name)
+            var_map_db.execute('insert into %s values("%s", "%s")' % 
+                               (soft_name, vuln_name, var_map.__str__()))
+            var_map_db.commit()
         
-        #VULN
-        var_map = get_type_mapping_table(neo4j_db, vuln_name)
-        var_map_db.execute('insert into %s values("%s", "%s")' % (soft_name, vuln_name, var_map.__str__()))
-
-        #PATCH
-        var_map = get_type_mapping_table(neo4j_db, patch_name)
-        var_map_db.execute('insert into %s values("%s", "%s")' % (soft_name, patch_name, var_map.__str__()))
+        ret = var_map_db.execute("select * from %s where func_name='%s'" % (soft_name, patch_name))
+        if not ret.fetchone():
+            #PATCH
+            var_map = get_type_mapping_table(neo4j_db, patch_name)
+            var_map_db.execute('insert into %s values("%s", "%s")' % 
+                               (soft_name, patch_name, var_map.__str__()))
+            var_map_db.commit()
         
-        var_map_db.commit()
+        
         
     print "done!"
 
