@@ -26,7 +26,7 @@ def get_software_var_map(soft, port):
     funcs = get_all_functions(neo4j_db)
     for func in funcs:
         # 查重
-        ret = sql_db.execute("select * from %s where func_id=%d" % (soft, func._id))
+        ret = sql_db.execute("select * from %s where func_id=？" % soft, (func._id,))
         if ret.fetchone():
             continue
         
@@ -36,8 +36,8 @@ def get_software_var_map(soft, port):
         ser.genSerilizedAST(ast_root)
         var_map = ser.variable_maps
         
-        query = 'insert into %s values(%d, "%s", "%s", "%s")' %(soft, func._id,
-            func.properties[u'name'],func_file, var_map.__str__())
+        query = 'insert into %s values(?, ?, ?, ?)' % soft,\
+                (func._id, func.properties[u'name'],func_file, var_map.__str__())
         try:
             sql_db.execute(query)
             sql_db.commit()
