@@ -50,7 +50,7 @@ def get_var_mapping(soft_name):
         vuln_name = cve_info.cveid.replace("-", "_").upper() + "_VULN_" + vuln_info.vuln_func
         patch_name = cve_info.cveid.replace("-", "_").upper() + "_PATCHED_" + vuln_info.vuln_func
         
-        #check if exist
+        #check if VULN exist
         ret = var_map_db.execute("select * from %s where func_name=?" % soft_name, (vuln_name,))
         if not ret.fetchone():
             #VULN
@@ -63,6 +63,7 @@ def get_var_mapping(soft_name):
                 print soft_name, vuln_name
                 print "error:", e
         
+        #check if PATCH exist
         ret = var_map_db.execute("select * from %s where func_name=?" % soft_name,(patch_name,))
         if not ret.fetchone():
             #PATCH

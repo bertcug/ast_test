@@ -26,7 +26,7 @@ def get_software_var_map(soft, port):
     funcs = get_all_functions(neo4j_db)
     for func in funcs:
         # 查重
-        ret = sql_db.execute("select * from %s where func_id=？" % soft, (func._id,))
+        ret = sql_db.execute("select * from %s where func_id=?" % soft, (func._id,))
         if ret.fetchone():
             continue
         
