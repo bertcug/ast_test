@@ -66,9 +66,7 @@ def func_similarity_segement_level(db1, funcs, db2, func_name, db_table):
         s2 = serializedAST(neo4j_db1, False, True).genSerilizedAST(ast_root)[0][:-1]
         s3 = serializedAST(neo4j_db1, True, False).genSerilizedAST(ast_root)[0][:-1]
         s4 = serializedAST(neo4j_db1, False, False).genSerilizedAST(ast_root)[0][:-1] 
-        
-        f = get_function_file(neo4j_db1, func)
-        
+              
         report = {}
         try:
             if suffix_tree_obj.search(s1, pattern1):
