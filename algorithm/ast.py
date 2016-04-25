@@ -5,10 +5,15 @@ Created on 2015年11月6日
 @author: Bert
 '''
 
-def get_function_node(neo4j_db, name):
-    query = "match (n {type:'Function', name:'%s'}) return n" % name
-    records = neo4j_db.cypher.execute(query)    
-    return records.one
+def get_function_node(neo4j_db, name_or_id):
+    if isinstance(name_or_id, basestring):
+        query = "match (n {type:'Function', name:'%s'}) return n" % name_or_id
+        records = neo4j_db.cypher.execute(query)    
+        return records.one
+    else:
+        query = "start n=node(%d) return n" % name_or_id
+        records = neo4j_db.cypher.execute(query)    
+        return records.one
 
 def get_function_ast_root(neo4j_db, name_or_node):
     if isinstance(name_or_node, basestring):
