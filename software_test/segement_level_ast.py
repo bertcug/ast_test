@@ -56,11 +56,11 @@ def func_similarity_segement_level(db1, funcs, db2, func_name, db_table):
     for func in funcs:
         print "[%s] processing %s VS %s" % (
                                    datetime.datetime.now().strftime("%y-%m-%d %H:%M:%S"),
-                                   func(1), func_name)
+                                   func[1], func_name)
         
-        ast_root = get_function_ast_root(neo4j_db1, func(0))
+        ast_root = get_function_ast_root(neo4j_db1, func[0])
         if ast_root is None:
-            print "function not found:", func(0), func(1)
+            print "function not found:", func[0], func[1]
         
         s1 = serializedAST(neo4j_db1, True, True).genSerilizedAST(ast_root)[0][:-1]
         s2 = serializedAST(neo4j_db1, False, True).genSerilizedAST(ast_root)[0][:-1]
@@ -92,7 +92,7 @@ def func_similarity_segement_level(db1, funcs, db2, func_name, db_table):
                 report['no_type_no_const'] = False
                 
             query = "insert into %s values(?,?,?,?,?,?,?,?,?)" % db_table
-            db_conn.execute(query, (func(0), func(1), func(2), func_name, report['distinct_type_and_const'],
+            db_conn.execute(query, (func[0], func[1], func[2], func_name, report['distinct_type_and_const'],
                               report['distinct_const_no_type'],
                               report['distinct_type_no_const'],
                               report['no_type_no_const'])
