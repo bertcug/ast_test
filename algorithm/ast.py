@@ -15,13 +15,17 @@ def get_function_node(neo4j_db, name_or_id):
         records = neo4j_db.cypher.execute(query)    
         return records.one
 
-def get_function_ast_root(neo4j_db, name_or_node):
-    if isinstance(name_or_node, basestring):
-        query = "match (n {type:'Function', name:'%s'})-[:`IS_FUNCTION_OF_AST`]->(m) return m" % name_or_node
+def get_function_ast_root(neo4j_db, name_or_node_or_id):
+    if isinstance(name_or_node_or_id, basestring):
+        query = "match (n {type:'Function', name:'%s'})-[:`IS_FUNCTION_OF_AST`]->(m) return m" % name_or_node_or_id
+        records = neo4j_db.cypher.execute(query)
+        return records.one
+    elif isinstance(name_or_node_or_id, int):
+        query = "start n=node(%d) match (n)-[:`IS_FUNCTION_OF_AST`]->(m) return m" % name_or_node_or_id
         records = neo4j_db.cypher.execute(query)
         return records.one
     else:
-        query = "start n=node(%d) match (n)-[:`IS_FUNCTION_OF_AST`]->(m) return m" % name_or_node._id
+        query = "start n=node(%d) match (n)-[:`IS_FUNCTION_OF_AST`]->(m) return m" % name_or_node_or_id._id
         records = neo4j_db.cypher.execute(query)
         return records.one
 
