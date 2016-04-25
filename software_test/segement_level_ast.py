@@ -89,7 +89,7 @@ def func_similarity_segement_level(db1, funcs, db2, func_name, db_table):
             else:
                 report['no_type_no_const'] = False
                 
-            query = "insert into %s values(?,?,?,?,?,?,?,?,?)" % db_table
+            query = "insert into %s values(?,?,?,?,?,?,?,?)" % db_table
             db_conn.execute(query, (func[0], func[1], func[2], func_name, report['distinct_type_and_const'],
                               report['distinct_const_no_type'],
                               report['distinct_type_no_const'],
@@ -100,7 +100,7 @@ def func_similarity_segement_level(db1, funcs, db2, func_name, db_table):
         except Exception,e:
             log_file = open("suffix_tree_error.log","a")
             log_file.writelines(
-                                [datetime.datetime.now().strftime("%y-%m-%d %H:%M:%S") + " " + e,
+                                [datetime.datetime.now().strftime("%y-%m-%d %H:%M:%S") + " " + e.__str__(),
                                  s1, pattern1])
             log_file.flush()
             log_file.close()
