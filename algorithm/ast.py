@@ -132,14 +132,13 @@ def get_function_node_by_ast_root(neo4jdb, ast_root):
 
 class serializedAST:
        
-    def __init__(self, neo4jdb, data_type_mapping=True, const_mapping=True):
+    def __init__(self, neo4jdb):
         # @data_type_mapping: True:相同类型变量映射成相同token， False：所有类型变量映射成相同token
         # @const_mapping: True:相同常亮映射到相同token，所有常量映射成相同token
         self.neo4jdb = neo4jdb
-        self.data_type_mapping = data_type_mapping
-        self.const_mapping = const_mapping
         self.variable_maps = {'other':'v'}  # 变量与类型映射表
-        
+    
+    #获取父节点   
     def getParent(self, node):
         return get_in_node(self.neo4jdb, node, edge_property='IS_AST_PARENT')
     
@@ -150,26 +149,24 @@ class serializedAST:
             node_type = parent.properties['type']  # 根据父节点类型进行判断
             
             if "Callee" == node_type:  # 函数类型
-                return ["f(0);", 0]  # 默认Identifier没有子节点
+                return (["f(0)",], ["f(0)",], ["f(0)",], ["f(0)",])  # 默认Identifier没有子节点
             
             elif "Lable" == node_type:  # Lable不进行映射
-                return ["Identifier(0);", 0]
+                return (["Identifier(0)",], ["Identifier(0)",], ["Identifier(0)",], ["Identifier(0)",])
             
             elif "GotoStatement" == node_type:  # goto语句的lable也不映射
-                return ["Identifier(0);", 0]
+                return (["Identifier(0)",], ["Identifier(0)",], ["Identifier(0)",], ["Identifier(0)",])
             
             else:
+                #获取变量类型
                 code = node.properties['code']
                 var_type = ""
-                if self.data_type_mapping:
-                    if code in self.variable_maps:
-                        var_type = self.variable_maps[code]
-                    else:
-                        var_type = self.variable_maps['other']
+                if code in self.variable_maps:
+                    var_type = self.variable_maps[code]
                 else:
-                    var_type = "v"
+                    var_type = self.variable_maps['other']
                 
-                return ["%s(0);" % var_type, 0]   
+                return ( ["%s(0)" % var_type,], ["%s(0)" % var_type,], ["v(0)",], ["v(0)",] )
                     
         else:
             print "Error"
@@ -195,11 +192,7 @@ class serializedAST:
     # 处理常量
     def parsePrimaryExprNode(self, node):
         const_code = node.properties['code']
-        if self.const_mapping:
-            return [const_code + "(0);", 0]
-        else:
-            return ["c(0);", 0]
-        
+        return ( ["%s(0)" % const_code,], ["c(0)",], ["%s(0)" % const_code,], ["c(0)"] )
         
     # 类型映射，解决指针与数组、多维数组问题
     def parseType(self, data_type):
@@ -207,8 +200,7 @@ class serializedAST:
            
     def genSerilizedAST(self, root):
         '''
-        @return: a list will be returned, list[0] is the serialized ast string,
-                list[1] is the node number of the ast
+        @return: 返回 tuple, 分别代表 区分变量及常量  区分变量不区分常量 区分常量不区分变量 不区分变量和常量
         @root:  function ast root node
         '''
            
@@ -216,7 +208,7 @@ class serializedAST:
         res = get_out_nodes(self.neo4jdb, root, edge_property='IS_AST_PARENT')
         
         if res:  # 如果有子节点
-            s_ast = ""  # 存储子节点产生的序列化AST字符串
+            s_ast = ()  # 存储子节点产生的序列化AST字符串
             num = 0  # 当前节点下所引导节点数
             
             # 处理子节点
@@ -233,11 +225,9 @@ class serializedAST:
                     self.parseIdentifierDeclNode(r)
                     
                 ret = self.genSerilizedAST(r)  # 递归调用
-                s_ast = s_ast + ret[0]  # 按照子节点的顺序生成AST序列
-                num += ret[1]  # 添加子节点所引导的节点数
-                num = num + 1  # 将子节点数目也算进去
+                s_ast = (s_ast[0].extend(ret[0]), s_ast[1].extend(ret[1]), 
+                        s_ast[2].extend(ret[2]), s_ast[3].extend(ret[3]) )
                                                 
-            
             # 处理根节点
             t = root.properties['type']
             
@@ -246,39 +236,42 @@ class serializedAST:
                 or t == 'InclusiveOrExpression' or t == 'MultiplicativeExpression' 
                 or t == 'OrExpression' or t == 'RelationalExpression' or t == 'ShiftStatement'):
                 
-                s_ast = root.properties['operator'] + "(%d)" % num + ";" + s_ast
-            
+                root_ast = [root.properties['operator'] + "(%d)" % len(s_ast[0]),]
+                s_ast =  ( root_ast.extend(s_ast[0]), root_ast.extend(s_ast[1]),
+                        root_ast.extend(s_ast[2]), root_ast.extend(s_ast[3]) )
             else:    
-                s_ast = root.properties['type'] + "(%d)" % num + ";" + s_ast                          
+                root_ast = [ root.properties['type'] + "(%d)" % len(s_ast[0]), ]
+                s_ast =  ( root_ast.extend(s_ast[0]), root_ast.extend(s_ast[1]),
+                        root_ast.extend(s_ast[2]), root_ast.extend(s_ast[3]) )                      
             
-            return [s_ast, num]  # 返回值是先AST序列，在节点个数，节点个数对后续操作是没用的
+            return s_ast
         
         else:  # 处理孤立节点
             num = 0
             t = root.properties['type']
             
             if t == 'IncDec':
-                s_ast = root.properties['code'] + "(%d)" % num + ";"
-                return [s_ast, num]
+                s_ast = ( [root.properties['code'] + "(0)",], [root.properties['code'] + "(0)",],
+                    [root.properties['code'] + "(0)",], [root.properties['code'] + "(0)",] )
+                return s_ast
         
             elif t == 'CastTarget' or t == 'UnaryOperator':
-                s_ast = root.properties['code'] + "(%d)" % num + ";"
-                return [s_ast, num]
+                s_ast = ( [root.properties['code'] + "(0)",], [root.properties['code'] + "(0)",],
+                    [root.properties['code'] + "(0)",], [root.properties['code'] + "(0)",] )
+                return s_ast
             
             elif t == 'SizeofOperand':
                 code = root.properties['code']
                 var_type = ""
                 
-                if self.data_type_mapping:
-                    if code in self.variable_maps:
-                        var_type = self.variable_maps[code]
-                    else:
-                        var_type = self.variable_maps['other']
+                if code in self.variable_maps:
+                    var_type = self.variable_maps[code]
                 else:
-                    var_type = "v"
-                s_ast = var_type + "(%d)" % num + ";"
+                    var_type = self.variable_maps['other']
+
+                s_ast = ( [var_type + "(0)",], [var_type + "(0)",], [var_type + "(0)",], [var_type + "(0)",] )
                 
-                return [s_ast, num]
+                return s_ast
             
             elif t == 'Identifier':
                 return self.parseIndentifierNode(root)
@@ -287,5 +280,6 @@ class serializedAST:
                 return self.parsePrimaryExprNode(root)
                                
             else:
-                s_ast = root.properties['type'] + "(%d)" % num + ";"
-                return [s_ast, num]
+                s_ast = ( [root.properties['type'] + "(0)",], [root.properties['type'] + "(0)",],
+                    [root.properties['type'] + "(0)",], [root.properties['type'] + "(0)",] )
+                return s_ast
