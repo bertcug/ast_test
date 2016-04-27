@@ -37,32 +37,21 @@ def segement_ast_similarity_process(vuln_name, patch_name, neo4jdb, org_func_nam
     
     
     #序列化AST返回值是一个数组，0元素是序列化的AST字符串，1元素是节点个数，AST字符串以;结尾，需要去掉结尾的;
-    o1 = serializedAST(neo4jdb, True, True)
-    o2 = serializedAST(neo4jdb, False, True)
-    o3 = serializedAST(neo4jdb, True, False)
-    o4 = serializedAST(neo4jdb, False, False)
-   
+    o1 = serializedAST(neo4jdb)
     o1.data_type_mapping = type_mapping
-    o2.data_type_mapping = type_mapping
-    o3.data_type_mapping = type_mapping
-    o4.data_type_mapping = type_mapping
     
-    pattern1 = o1.genSerilizedAST(vuln_func)[0][:-1]
-    pattern2 = o2.genSerilizedAST(vuln_func)[0][:-1] 
-    pattern3 = o3.genSerilizedAST(vuln_func)[0][:-1]
-    pattern4 = o4.genSerilizedAST(vuln_func)[0][:-1]
+    ret = o1.genSerilizedAST(vuln_func)
+    #delete FunctionDef and CompoundStatement node [2:]
+    pattern1 = ";".join(ret[0][2:])
+    pattern2 = ";".join(ret[1][2:])
+    pattern3 = ";".join(ret[2][2:])
+    pattern4 = ";".join(ret[3][2:])
     
-    #delete FunctionDef and CompoundStatement node
-    prefix_str = r"^FunctionDef\([0-9]+\);CompoundStatement\([0-9]+\);"
-    pattern1 = re.sub(prefix_str, "", pattern1)
-    pattern2 = re.sub(prefix_str, "", pattern2)
-    pattern3 = re.sub(prefix_str, "", pattern3)
-    pattern4 = re.sub(prefix_str, "", pattern4)
-    
-    s1 = o1.genSerilizedAST(patched_func)[0][:-1]
-    s2 = o2.genSerilizedAST(patched_func)[0][:-1]
-    s3 = o3.genSerilizedAST(patched_func)[0][:-1]
-    s4 = o4.genSerilizedAST(patched_func)[0][:-1]
+    tmp = o1.genSerilizedAST(patched_func)
+    s1 = ";".join(tmp[0])
+    s2 = ";".join(tmp[0])
+    s3 = ";".join(tmp[0])
+    s4 = ";".join(tmp[0])
     
     report = {}
     if suffix_tree_obj.search(s1, pattern1):

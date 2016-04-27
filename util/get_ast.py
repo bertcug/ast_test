@@ -17,5 +17,8 @@ if __name__ == "__main__":
     
     ast_root = get_function_ast_root(db, func)
     ser = serializedAST(db)
-    print ser.genSerilizedAST(ast_root)[0]
-    
+    ret =  ser.genSerilizedAST(ast_root)
+    print "First:", ";".join(ret[0])
+    print "Second:", ";".join(ret[1])
+    print "Third:", ";".join(ret[2])
+    print "Fourth:", ";".join(ret[3])

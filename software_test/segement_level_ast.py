@@ -2,13 +2,11 @@
 
 import sys
 sys.path.append("..")
-import time
 import traceback
 import datetime
 import re
 import sqlite3
 from py2neo import Graph
-from openpyxl import Workbook
 from algorithm.ast import get_function_ast_root
 from algorithm.ast import get_all_functions, get_function_node
 from algorithm.ast import serializedAST
@@ -41,17 +39,13 @@ def func_similarity_segement_level(db1, funcs, db2, func_name, db_table):
     if target_func is None:
         print "%s is not found" % func_name
         return
-     
-    pattern1 = serializedAST(neo4j_db2, True, True).genSerilizedAST(target_func)[0][:-1]
-    pattern2 = serializedAST(neo4j_db2, False, True).genSerilizedAST(target_func)[0][:-1]  # 所有类型变量映射成相同值
-    pattern3 = serializedAST(neo4j_db2, True, False).genSerilizedAST(target_func)[0][:-1]
-    pattern4 = serializedAST(neo4j_db2, False, False).genSerilizedAST(target_func)[0][:-1]
     
-    prefix_str = r"^FunctionDef\([0-9]+\);CompoundStatement\([0-9]+\);"
-    pattern1 = re.sub(prefix_str, "", pattern1)
-    pattern2 = re.sub(prefix_str, "", pattern2)
-    pattern3 = re.sub(prefix_str, "", pattern3)
-    pattern4 = re.sub(prefix_str, "", pattern4)
+    ret =  serializedAST(neo4j_db2).genSerilizedAST(target_func)
+    
+    pattern1 = ";".join(ret[0][2:])
+    pattern2 = ";".join(ret[1][2:])
+    pattern3 = ";".join(ret[2][2:])
+    pattern4 = ";".join(ret[3][2:])
     
     for func in funcs:
         print "[%s] processing %s VS %s" % (
@@ -62,10 +56,11 @@ def func_similarity_segement_level(db1, funcs, db2, func_name, db_table):
         if ast_root is None:
             print "function not found:", func[0], func[1]
         
-        s1 = serializedAST(neo4j_db1, True, True).genSerilizedAST(ast_root)[0][:-1]
-        s2 = serializedAST(neo4j_db1, False, True).genSerilizedAST(ast_root)[0][:-1]
-        s3 = serializedAST(neo4j_db1, True, False).genSerilizedAST(ast_root)[0][:-1]
-        s4 = serializedAST(neo4j_db1, False, False).genSerilizedAST(ast_root)[0][:-1] 
+        tmp = serializedAST(neo4j_db1).genSerilizedAST(ast_root)
+        s1 = ";".join(tmp[0])
+        s2 = ";".join(tmp[1])
+        s3 = ";".join(tmp[2])
+        s4 = ";".join(tmp[3]) 
               
         report = {}
         try:

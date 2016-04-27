@@ -36,35 +36,21 @@ def search_vuln_seg_in_func(db1, vuln_seg, vuln_func, var_map, db2, func_name, s
         print "%s is not found" % func_name
         return (vuln_seg, func_name, "patch_not_found","-", "-", "-", "-","-","-")
     
-    o1 = serializedAST(db1, True, True)
-    o2 = serializedAST(db1, False, True)
-    o3 = serializedAST(db1, True, False)
-    o4 = serializedAST(db1, False, False)
-    
-    type_mapping = var_map
-    
-    o1.variable_maps = type_mapping
-    o2.variable_maps = type_mapping
-    o3.variable_maps = type_mapping
-    o4.variable_maps = type_mapping
-    
-    #序列化AST返回值是一个数组，0元素是序列化的AST字符串，1元素是节点个数，AST字符串以;结尾，需要去掉结尾的;
-    pattern1 = o1.genSerilizedAST(vuln_seg_func)[0][:-1]
-    pattern2 = o2.genSerilizedAST(vuln_seg_func)[0][:-1] 
-    pattern3 = o3.genSerilizedAST(vuln_seg_func)[0][:-1]
-    pattern4 = o4.genSerilizedAST(vuln_seg_func)[0][:-1]
+    o1 = serializedAST(db1)
+    o1.variable_maps = var_map
+    ret = o1.genSerilizedAST(vuln_seg_func)
     
     #delete FunctionDef and CompoundStatement node
-    prefix_str = r"^FunctionDef\([0-9]+\);CompoundStatement\([0-9]+\);"
-    pattern1 = re.sub(prefix_str, "", pattern1)
-    pattern2 = re.sub(prefix_str, "", pattern2)
-    pattern3 = re.sub(prefix_str, "", pattern3)
-    pattern4 = re.sub(prefix_str, "", pattern4)
+    pattern1 = ";".join(ret[0][2:])
+    pattern2 = ";".join(ret[1][2:]) 
+    pattern3 = ";".join(ret[2][2:])
+    pattern4 = ";".join(ret[3][2:])
     
-    s1 = serializedAST(db2, True, True).genSerilizedAST(patched_func)[0][:-1]
-    s2 = serializedAST(db2, False, True).genSerilizedAST(patched_func)[0][:-1]
-    s3 = serializedAST(db2, True, False).genSerilizedAST(patched_func)[0][:-1]
-    s4 = serializedAST(db2, False, False).genSerilizedAST(patched_func)[0][:-1]
+    tmp = serializedAST(db2).genSerilizedAST(patched_func)
+    s1 = ";".join(tmp[0][2:])
+    s2 = ";".join(tmp[1][2:])
+    s3 = ";".join(tmp[2][2:])
+    s4 = ";".join(tmp[3][2:])
       
     report = {}
     if suffix_obj.search(s1, pattern1):
@@ -277,7 +263,7 @@ def code_reuse():
             try:
                 var_map = get_type_mapping_table(db, row[0].value)
                 ret = search_vuln_seg_in_func(db, test[0], test[1], var_map, db, row[0].value, suffix_obj)
-                ws.append(ret)
+                ff_ws.append(ret)
                 result.save("/home/bert/Documents/data/code_reuse.xlsx")
             except Exception as e:
                 print e  

@@ -30,19 +30,12 @@ def func_similarity_astLevel(db1, funcs, db2, func_name, suffix_tree_obj, worksh
     # funcs = getAllFuncs(db1) #获取所有函数
     filter_funcs = filter_functions(db1, funcs, return_type, param_list) # 过滤待比较函数
     
-    pattern1 = serializedAST(db2, True, True).genSerilizedAST(target_func)[0][:-1]
-    pattern2 = serializedAST(db2, False, True).genSerilizedAST(target_func)[0][:-1]  # 所有类型变量映射成相同值
-    pattern3 = serializedAST(db2, True, False).genSerilizedAST(target_func)[0][:-1]
-    pattern4 = serializedAST(db2, False, False).genSerilizedAST(target_func)[0][:-1]
+    ret = serializedAST(db2).genSerilizedAST(target_func)
+    pattern1 = ";".join(ret[0][2:])
+    pattern2 = ";".join(ret[1][2:])
+    pattern3 = ";".join(ret[2][2:])
+    pattern4 = ";".join(ret[3][2:])  
     
-    prefix_str = r"^FunctionDef\([0-9]+\);CompoundStatement\([0-9]+\);"
-    pattern1 = re.sub(prefix_str, "", pattern1)
-    pattern2 = re.sub(prefix_str, "", pattern2)
-    pattern3 = re.sub(prefix_str, "", pattern3)
-    pattern4 = re.sub(prefix_str, "", pattern4)
-    
-    
-    report_dict = {}
     for func in filter_funcs:
         ast_root = get_function_ast_root(db1, func.properties[u'name'])
         s1 = serializedAST(db1, True, True).genSerilizedAST(ast_root)[0][:-1]
@@ -66,7 +59,7 @@ def func_similarity_astLevel(db1, funcs, db2, func_name, suffix_tree_obj, worksh
         if report['distinct_type_and_const'] or  report['distinct_const_no_type']\
             or report['distinct_type_no_const'] or report['no_type_no_const']:
             
-            file = get_function_file(db1, func.properties[u'name'])[41:]
+            file = get_function_file(db1, func.properties[u'name'])
             worksheet.append(
                              (func_name, file, func.properties[u'name'],report['distinct_type_and_const'],
                               report['distinct_const_no_type'], report['distinct_type_no_const'],

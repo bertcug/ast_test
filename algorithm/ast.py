@@ -199,17 +199,15 @@ class serializedAST:
         return data_type  # 简单处理
            
     def genSerilizedAST(self, root):
-        '''
-        @return: 返回 tuple, 分别代表 区分变量及常量  区分变量不区分常量 区分常量不区分变量 不区分变量和常量
-        @root:  function ast root node
-        '''
+        # @return: 返回 tuple, 分别代表 区分变量及常量  区分变量不区分常量 区分常量不区分变量 不区分变量和常量
+        # @root:  function ast root node
+        
            
         # AST节点之间以 IS_AST_PARENT 边连接
         res = get_out_nodes(self.neo4jdb, root, edge_property='IS_AST_PARENT')
         
         if res:  # 如果有子节点
-            s_ast = ()  # 存储子节点产生的序列化AST字符串
-            num = 0  # 当前节点下所引导节点数
+            s_ast = ([], [], [], [])  # 存储子节点产生的序列化AST字符串
             
             # 处理子节点
             for r in res:  # 认为子节点按照childrenNum排序
@@ -225,8 +223,8 @@ class serializedAST:
                     self.parseIdentifierDeclNode(r)
                     
                 ret = self.genSerilizedAST(r)  # 递归调用
-                s_ast = (s_ast[0].extend(ret[0]), s_ast[1].extend(ret[1]), 
-                        s_ast[2].extend(ret[2]), s_ast[3].extend(ret[3]) )
+                s_ast = (s_ast[0] + ret[0], s_ast[1] + ret[1], 
+                        s_ast[2] + ret[2], s_ast[3] + ret[3] )
                                                 
             # 处理根节点
             t = root.properties['type']
@@ -237,17 +235,16 @@ class serializedAST:
                 or t == 'OrExpression' or t == 'RelationalExpression' or t == 'ShiftStatement'):
                 
                 root_ast = [root.properties['operator'] + "(%d)" % len(s_ast[0]),]
-                s_ast =  ( root_ast.extend(s_ast[0]), root_ast.extend(s_ast[1]),
-                        root_ast.extend(s_ast[2]), root_ast.extend(s_ast[3]) )
+                s_ast =  ( root_ast + s_ast[0], root_ast + s_ast[1],
+                        root_ast + s_ast[2], root_ast + s_ast[3] )
             else:    
                 root_ast = [ root.properties['type'] + "(%d)" % len(s_ast[0]), ]
-                s_ast =  ( root_ast.extend(s_ast[0]), root_ast.extend(s_ast[1]),
-                        root_ast.extend(s_ast[2]), root_ast.extend(s_ast[3]) )                      
+                s_ast =  ( root_ast+s_ast[0], root_ast+s_ast[1],
+                        root_ast+s_ast[2], root_ast+s_ast[3] )                      
             
             return s_ast
         
         else:  # 处理孤立节点
-            num = 0
             t = root.properties['type']
             
             if t == 'IncDec':
