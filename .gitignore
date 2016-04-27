@@ -109,4 +109,5 @@ $RECYCLE.BIN/
 *.lnk
 
 .project
+.settings/
 .settings/org.eclipse.core.resources.prefs
