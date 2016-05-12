@@ -17,7 +17,7 @@ import datetime
 
 def get_software_var_map(soft, port):
     neo4j_db = Graph("http://127.0.0.1:%d/db/data/" % port)
-    sql_db = sqlite3.connect(soft + ".db")
+    sql_db = sqlite3.connect("/home/bert/Documents/data/" + soft + ".db")
     sql_db.execute('''create table if not exists %s(
             func_id INT PRIMARY KEY,
             func_name CHAR(100) NOT NULL,
