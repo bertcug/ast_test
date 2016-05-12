@@ -15,6 +15,8 @@ class suffixtree:
         
         if not jpype.isJVMStarted():           
             jpype.startJVM(jvmPath,jvmArg)
+        else:
+            jpype.attachThreadToJVM()
             
         self.Decompose = jpype.JClass("com.syntactic.Decompose")  
 

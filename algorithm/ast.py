@@ -149,13 +149,14 @@ class serializedAST:
             node_type = parent.properties['type']  # 根据父节点类型进行判断
             
             if "Callee" == node_type:  # 函数类型
-                return (["f(0)",], ["f(0)",], ["f(0)",], ["f(0)",])  # 默认Identifier没有子节点
+            	c = node.properties['code']
+                return (["f(0)",], ["f(0)",], ["f(0)",], ["f(0)",], ["%s(0)" % c,] ) # 默认Identifier没有子节点
             
             elif "Lable" == node_type:  # Lable不进行映射
-                return (["Identifier(0)",], ["Identifier(0)",], ["Identifier(0)",], ["Identifier(0)",])
+                return (["Identifier(0)",], ["Identifier(0)",], ["Identifier(0)",], ["Identifier(0)",], ["Identifier(0)",])
             
             elif "GotoStatement" == node_type:  # goto语句的lable也不映射
-                return (["Identifier(0)",], ["Identifier(0)",], ["Identifier(0)",], ["Identifier(0)",])
+                return (["Identifier(0)",], ["Identifier(0)",], ["Identifier(0)",], ["Identifier(0)",], ["Identifier(0)",])
             
             else:
                 #获取变量类型
@@ -166,7 +167,7 @@ class serializedAST:
                 else:
                     var_type = self.variable_maps['other']
                 
-                return ( ["%s(0)" % var_type,], ["%s(0)" % var_type,], ["v(0)",], ["v(0)",] )
+                return (["%s(0)" % var_type,], ["%s(0)" % var_type,], ["v(0)",], ["v(0)",], ["%s(0)" % code,])
                     
         else:
             print "Error"
@@ -192,7 +193,7 @@ class serializedAST:
     # 处理常量
     def parsePrimaryExprNode(self, node):
         const_code = node.properties['code']
-        return ( ["%s(0)" % const_code,], ["c(0)",], ["%s(0)" % const_code,], ["c(0)"] )
+        return (["%s(0)" % const_code,], ["c(0)",], ["%s(0)" % const_code,], ["c(0)"],["%s(0)" % const_code,])
         
     # 类型映射，解决指针与数组、多维数组问题
     def parseType(self, data_type):
@@ -207,7 +208,7 @@ class serializedAST:
         res = get_out_nodes(self.neo4jdb, root, edge_property='IS_AST_PARENT')
         
         if res:  # 如果有子节点
-            s_ast = ([], [], [], [])  # 存储子节点产生的序列化AST字符串
+            s_ast = ([], [], [], [], [])  # 存储子节点产生的序列化AST字符串
             
             # 处理子节点
             for r in res:  # 认为子节点按照childrenNum排序
@@ -224,7 +225,7 @@ class serializedAST:
                     
                 ret = self.genSerilizedAST(r)  # 递归调用
                 s_ast = (s_ast[0] + ret[0], s_ast[1] + ret[1], 
-                        s_ast[2] + ret[2], s_ast[3] + ret[3] )
+                        s_ast[2] + ret[2], s_ast[3] + ret[3], s_ast[4]+ret[4] )
                                                 
             # 处理根节点
             t = root.properties['type']
@@ -235,12 +236,20 @@ class serializedAST:
                 or t == 'OrExpression' or t == 'RelationalExpression' or t == 'ShiftStatement'):
                 
                 root_ast = [root.properties['operator'] + "(%d)" % len(s_ast[0]),]
-                s_ast =  ( root_ast + s_ast[0], root_ast + s_ast[1],
-                        root_ast + s_ast[2], root_ast + s_ast[3] )
+                s_ast=( 
+                	root_ast + s_ast[0], 
+                	root_ast + s_ast[1],
+                    root_ast + s_ast[2], 
+                    root_ast + s_ast[3],
+                    root_ast + s_ast[4] )
             else:    
                 root_ast = [ root.properties['type'] + "(%d)" % len(s_ast[0]), ]
-                s_ast =  ( root_ast+s_ast[0], root_ast+s_ast[1],
-                        root_ast+s_ast[2], root_ast+s_ast[3] )                      
+                s_ast =  ( 
+                	root_ast+s_ast[0], 
+                	root_ast+s_ast[1],
+                    root_ast+s_ast[2], 
+                    root_ast+s_ast[3], 
+                    root_ast+s_ast[4] )                      
             
             return s_ast
         
@@ -248,13 +257,23 @@ class serializedAST:
             t = root.properties['type']
             
             if t == 'IncDec':
-                s_ast = ( [root.properties['code'] + "(0)",], [root.properties['code'] + "(0)",],
-                    [root.properties['code'] + "(0)",], [root.properties['code'] + "(0)",] )
+                s_ast = ( 
+                	[root.properties['code'] + "(0)",], 
+                	[root.properties['code'] + "(0)",],
+                    [root.properties['code'] + "(0)",], 
+                    [root.properties['code'] + "(0)",], 
+                    [root.properties['code'] + "(0)",] 
+                    )
                 return s_ast
         
             elif t == 'CastTarget' or t == 'UnaryOperator':
-                s_ast = ( [root.properties['code'] + "(0)",], [root.properties['code'] + "(0)",],
-                    [root.properties['code'] + "(0)",], [root.properties['code'] + "(0)",] )
+                s_ast = ( 
+                	[root.properties['code'] + "(0)",],
+                	[root.properties['code'] + "(0)",],
+                    [root.properties['code'] + "(0)",],
+                    [root.properties['code'] + "(0)",],
+                    [root.properties['code'] + "(0)",] 
+                    )
                 return s_ast
             
             elif t == 'SizeofOperand':
@@ -266,8 +285,13 @@ class serializedAST:
                 else:
                     var_type = self.variable_maps['other']
 
-                s_ast = ( [var_type + "(0)",], [var_type + "(0)",], [var_type + "(0)",], [var_type + "(0)",] )
-                
+                s_ast = ( 
+                	[var_type + "(0)",],
+                	[var_type + "(0)",],
+                	[var_type + "(0)",],
+                	[var_type + "(0)",],
+                	[code + "(0)",]
+                	)
                 return s_ast
             
             elif t == 'Identifier':
@@ -277,6 +301,11 @@ class serializedAST:
                 return self.parsePrimaryExprNode(root)
                                
             else:
-                s_ast = ( [root.properties['type'] + "(0)",], [root.properties['type'] + "(0)",],
-                    [root.properties['type'] + "(0)",], [root.properties['type'] + "(0)",] )
+                s_ast = ( 
+                	[root.properties['type'] + "(0)",],
+                	[root.properties['type'] + "(0)",],
+                    [root.properties['type'] + "(0)",],
+                    [root.properties['type'] + "(0)",],
+                    [root.properties['type'] + "(0)",],
+                     )
                 return s_ast
